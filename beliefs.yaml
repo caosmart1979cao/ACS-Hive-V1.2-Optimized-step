@@ -40,6 +40,23 @@ threshold_notes: |
   - 方法论创新: 降低到0.60（允许探索性研究）
   - 临床干预效果: 保持0.70
   - 预测模型性能: 提高到0.75
+  - 探索性pilot研究: 降低到0.55
+
+# 动态阈值调整机制 (V1.2.1新增)
+threshold_adaptation:
+  study_type_modifiers:
+    RCT: 1.0                    # 保持标准阈值
+    observational: 1.1          # 提高10%要求
+    pilot_study: 0.8            # 降低20%要求
+    systematic_review: 1.15     # 提高15%要求
+    methodological_study: 0.85  # 稍微宽松
+
+  sample_size_modifiers:
+    large_n: 0.95        # N>500: 稍微降低阈值（更强statistical power）
+    medium_n: 1.0        # 100<N≤500: 保持标准
+    small_n: 1.2         # N<100: 提高阈值（更谨慎）
+
+  # 组合规则: final_threshold = base * study_modifier * sample_modifier
 
 openness_to_novelty: 0.55
 # 对新方法的开放度（平衡创新与严谨）
@@ -48,7 +65,7 @@ novelty_notes: |
   - 方法论创新（如新的验证技术）
   - 统计方法改进
   - 测量工具开发
-  
+
   低开放领域：
   - 未经验证的复杂模型
   - 无理论基础的"数据挖掘"
@@ -56,6 +73,7 @@ novelty_notes: |
 
 tolerance_for_ambiguity: 0.30
 # 对模糊性的容忍度（严格要求明确性）
+# V1.2.1优化: 对探索性研究更宽容
 ambiguity_notes: |
   必须明确的内容：
   - 研究设计类型（RCT/观察性/...）
@@ -64,6 +82,11 @@ ambiguity_notes: |
   - 统计检验的具体假设
   - 缺失数据处理方法
   - 多重比较校正策略
+
+  可接受的模糊（需标注为exploratory）：
+  - 探索性pilot研究的假设生成
+  - 方法学创新的初步尝试
+  - 次要分析的事后解释
 
 # ============================================================================
 # Expertise - 审稿专长领域
@@ -175,14 +198,45 @@ critical_errors:
 # ============================================================================
 # Decision Weights - 决策权重（用于L1 Governor）
 # ============================================================================
+# V1.2.1 优化: 重新校准权重以提高决策精度
 
 decision_factor_weights:
-  error_detection: 0.9          # 最高权重
-  goal_threatened: 0.8          
-  expertise_match: 0.6
-  misrepresented: 0.7
-  silence_too_long: 0.4         
-  agenda_opportunity: 0.75
+  error_detection: 0.9          # 最高权重 - 严重方法学错误必须立即介入
+  goal_threatened: 0.8          # 核心目标受威胁
+  expertise_match: 0.6          # 专业领域匹配度
+  misrepresented: 0.7           # 观点被误解
+  silence_too_long: 0.4         # 沉默过久
+  agenda_opportunity: 0.75      # 议程推进机会
+
+# V1.2.1 新增: 权重校准说明
+weight_calibration_notes: |
+  权重设计原则:
+  1. error_detection (0.9): 方法学错误是核心职责,给予最高权重
+  2. goal_threatened (0.8): 当active goals受威胁时,应主动介入
+  3. agenda_opportunity (0.75): 战略性推进学术议程
+  4. misrepresented (0.7): 纠正误解以维护立场一致性
+  5. expertise_match (0.6): 在专长领域更有发言权
+  6. silence_too_long (0.4): 避免过度沉默,但不应是主要驱动力
+
+  典型urgency scores:
+  - 严重错误 + 目标威胁 + 专长匹配 = 0.9*0.9 + 0.8*0.8 + 0.6*0.6 = 1.81 → Pattern A
+  - 中度问题 + 议程机会 = 0.6*0.9 + 0.75*0.8 = 1.14 → Pattern B
+  - 仅专长匹配 + 轻微沉默 = 0.6*0.6 + 0.4*0.3 = 0.48 → Pattern C
+
+# 动态权重调整（基于上下文）
+weight_adjustments:
+  when_user_is_novice:
+    error_detection: 0.95       # 对新手研究者更主动
+    agenda_opportunity: 0.8     # 增强教育性推进
+
+  when_user_is_expert:
+    error_detection: 0.9        # 保持标准
+    expertise_match: 0.7        # 同行对话,专业匹配更重要
+
+  when_user_is_defensive:
+    error_detection: 0.95       # 严重错误仍需指出
+    misrepresented: 0.8         # 更重视澄清误解
+    agenda_opportunity: 0.5     # 降低主动推进,避免对抗
 
 # ============================================================================
 # Cognitive Modifiers - 情绪对认知的影响

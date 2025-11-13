@@ -219,12 +219,34 @@ active_goals:
 # ============================================================================
 # Proactivity Settings
 # ============================================================================
+# V1.2.1 优化: 重新校准阈值以平衡主动性与用户体验
 
 intervention_thresholds:
-  critical: 0.85        # Tier 1核心目标受威胁 → 立即强介入
-  high: 0.70           # Tier 2报告规范问题 → 中度介入
-  moderate: 0.50       # Tier 3可改进项 → 温和建议
-  watch: 0.30          # 以下保持观察，不主动介入
+  critical: 0.85        # Tier 1核心目标受威胁 → Pattern A 立即强介入
+  high: 0.60           # Tier 2报告规范问题 → Pattern B 中度介入 (从0.70降至0.60)
+  moderate: 0.35       # Tier 3可改进项 → Pattern C 温和建议 (从0.50降至0.35)
+  watch: 0.20          # 以下保持观察，不主动介入 (从0.30降至0.20)
+
+# V1.2.1 新增: 阈值校准说明
+threshold_calibration_notes: |
+  阈值调整理由:
+  1. high: 0.70 → 0.60
+     - 原因: 0.70过高,导致很多中度问题(如报告规范)被Pattern C处理
+     - 效果: 现在与decision_logic_guide.md中Pattern B定义(0.60-0.85)完全对齐
+
+  2. moderate: 0.50 → 0.35
+     - 原因: 与Pattern C定义(0.35-0.60)对齐
+     - 效果: 更多轻微问题会得到温和建议,而非沉默
+
+  3. watch: 0.30 → 0.20
+     - 原因: 为moderate腾出空间
+     - 效果: 降低不必要介入的风险
+
+  典型场景映射:
+  - urgency ≥ 0.85 → critical → Pattern A
+  - 0.60 ≤ urgency < 0.85 → high → Pattern B
+  - 0.35 ≤ urgency < 0.60 → moderate → Pattern C
+  - urgency < 0.35 → watch → Pattern D (strategic silence)
 
 # ============================================================================
 # Goal Progress Tracking (Template)
@@ -233,8 +255,50 @@ intervention_thresholds:
 progress_tracking:
   # 由L3 [M-04]和[M-01]负责更新
   # 格式：{goal_id: {interventions: N, successes: M, last_update: date}}
-  
+
   metrics:
     intervention_count: 0      # 总介入次数
     acceptance_rate: 0.0       # 建议被采纳比例
     impact_score: 0.0          # 综合影响力评分
+
+# ============================================================================
+# V1.2.1 新增: 质量保证机制
+# ============================================================================
+
+quality_assurance:
+  # 决策质量指标
+  decision_quality_metrics:
+    - name: "precision"
+      description: "介入的准确性(介入时确实有问题)"
+      target: 0.90
+      measurement: "用户认可率"
+
+    - name: "recall"
+      description: "问题的捕获率(有问题时确实介入)"
+      target: 0.85
+      measurement: "事后分析遗漏率"
+
+    - name: "user_satisfaction"
+      description: "用户满意度"
+      target: 0.80
+      measurement: "积极反馈比例"
+
+  # 自我监控检查点
+  self_check_triggers:
+    - condition: "连续3次强介入(Pattern A)未被采纳"
+      action: "降低error_detection权重或提高critical阈值"
+
+    - condition: "连续5轮沉默且用户讨论core topics"
+      action: "检查silence_too_long因子是否生效"
+
+    - condition: "agenda推进被用户明确拒绝2次"
+      action: "降低该agenda的importance或延长cooldown"
+
+  # 定期校准建议
+  calibration_schedule:
+    frequency: "每20次交互"
+    tasks:
+      - "统计Pattern A/B/C/D的分布"
+      - "评估用户反馈(接受/拒绝/中立)"
+      - "识别权重/阈值的系统性偏差"
+      - "建议M-01进行参数微调"

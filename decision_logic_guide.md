@@ -425,32 +425,56 @@ Check agenda_validation_culture:
 
 ## 🎲 Step 3: Calculate Total Urgency
 
-```python
-def calculate_urgency(factors):
-    urgency = (
-        factors['error_detection'] * 0.9 +
-        factors['goal_threatened'] * 0.8 +
-        factors['expertise_match'] * 0.6 +
-        factors['misrepresented'] * 0.7 +
-        factors['silence_too_long'] * 0.4 +
-        factors['agenda_opportunity'] * 1.0  # 已经乘以importance
-    )
-    
-    return min(urgency, 2.0)  # 理论上限
+**V1.2.1 重要修正**: agenda_opportunity现在统一使用加权计算
 
-# 使用
+```python
+def calculate_urgency(factors, weights):
+    """
+    计算总urgency分数
+
+    V1.2.1修正: 所有因子统一使用 factor_score * weight 的计算方式
+    之前版本中agenda_opportunity直接使用importance值(0-1),导致权重不一致
+    """
+    urgency = (
+        factors['error_detection'] * weights['error_detection'] +      # 0-0.9
+        factors['goal_threatened'] * weights['goal_threatened'] +      # 0-0.8
+        factors['expertise_match'] * weights['expertise_match'] +      # 0-0.6
+        factors['misrepresented'] * weights['misrepresented'] +        # 0-0.7
+        factors['silence_too_long'] * weights['silence_too_long'] +    # 0-0.4
+        factors['agenda_opportunity'] * weights['agenda_opportunity']  # 0-0.75 (V1.2.1修正)
+    )
+
+    # 理论最大值 = 0.9+0.8+0.6+0.7+0.4+0.75 = 4.15
+    # 实际最大值约为 2.5 (多个因子同时高分的情况罕见)
+    return min(urgency, 3.0)  # 设置实用上限
+
+# 使用示例
+weights = beliefs_yaml.decision_factor_weights
+
 urgency_score = calculate_urgency({
-    'error_detection': 0.9,
-    'goal_threatened': 0.72,
-    'expertise_match': 0.6,
-    'misrepresented': 0.0,
-    'silence_too_long': 0.2,
-    'agenda_opportunity': 0.0
-})
-# → urgency = 0.9*0.9 + 0.72*0.8 + 0.6*0.6 + 0 + 0.2*0.4 + 0
-#            = 0.81 + 0.576 + 0.36 + 0 + 0.08 + 0
-#            = 1.826
+    'error_detection': 0.9,      # 检测到严重错误
+    'goal_threatened': 0.72,     # goal_demand_validation被威胁 (0.9*0.8)
+    'expertise_match': 0.6,      # 在专长领域
+    'misrepresented': 0.0,       # 无误解
+    'silence_too_long': 0.2,     # 轻微沉默
+    'agenda_opportunity': 0.95   # 高重要性议程机会 (importance值)
+}, weights)
+
+# V1.2.1修正后:
+# urgency = 0.9*0.9 + 0.72*0.8 + 0.6*0.6 + 0 + 0.2*0.4 + 0.95*0.75
+#         = 0.81 + 0.576 + 0.36 + 0 + 0.08 + 0.7125
+#         = 2.54 → Pattern A (强介入)
+
+# V1.2前(错误版本):
+# urgency = 0.9*0.9 + 0.72*0.8 + 0.6*0.6 + 0 + 0.2*0.4 + 0.95
+#         = 0.81 + 0.576 + 0.36 + 0 + 0.08 + 0.95
+#         = 2.776 (agenda权重过大!)
 ```
+
+**修正说明**:
+- **修正前**: `agenda_opportunity`直接使用`item.importance`(0-1范围),导致其影响力不受`agenda_opportunity`权重(0.75)控制
+- **修正后**: 统一使用`factor_score * weight`模式,`agenda_opportunity`的factor_score为`item.importance`,然后乘以权重0.75
+- **影响**: 修正后agenda的影响更合理,不会过度主导决策(之前importance=0.95时可直接贡献0.95,现在仅贡献0.71)
 
 ---
 
@@ -701,9 +725,13 @@ Factor 6: Agenda Opportunity
   → score = 0.95 (importance)
 
 --- Step 3: Calculate Urgency ---
-urgency = 0.9*0.9 + 0.72*0.8 + 0.6*0.6 + 0 + 0.1*0.4 + 0.95
-        = 0.81 + 0.576 + 0.36 + 0 + 0.04 + 0.95
-        = 2.736 → capped at 2.0
+# V1.2.1修正: agenda_opportunity现在也要乘以权重
+urgency = 0.9*0.9 + 0.72*0.8 + 0.6*0.6 + 0 + 0.1*0.4 + 0.95*0.75
+        = 0.81 + 0.576 + 0.36 + 0 + 0.04 + 0.7125
+        = 2.499 → Pattern A (强介入)
+
+# V1.2前(不一致版本):
+# urgency = 0.81 + 0.576 + 0.36 + 0 + 0.04 + 0.95 = 2.736
 
 --- Step 4: Select Pattern ---
 urgency = 2.0 ≥ 0.85
@@ -747,6 +775,175 @@ M04.log_interaction(...)
 
 ---
 
-**Decision Logic Guide Version**: 1.2-Complete  
-**Last Updated**: 2025-11-10  
-**Status**: Production Ready
+## 🔧 V1.2.1 新增: 决策可解释性增强
+
+### Debug模式输出模板
+
+当需要解释决策时,使用以下格式:
+
+```markdown
+<thinking>
+[ACS-Governor Decision Analysis]
+
+User Message: "{user_message_summary}"
+
+Factor Breakdown:
+1. Error Detection: {score} (weight: 0.9)
+   - Detected: {error_list}
+   - Reasoning: {why_score}
+
+2. Goal Threatened: {score} (weight: 0.8)
+   - Threatened Goal: {goal_id}
+   - Reason: {threat_description}
+
+3. Expertise Match: {score} (weight: 0.6)
+   - Match: {primary|secondary|none}
+   - Domain: {domain_name}
+
+4. Misrepresented: {score} (weight: 0.7)
+   - Type: {misrep_type|none}
+   - Context: {explanation}
+
+5. Silence Too Long: {score} (weight: 0.4)
+   - Turns Since Intervention: {n}
+   - Context: {discussing_core_topics?}
+
+6. Agenda Opportunity: {score} (weight: 0.75)
+   - Triggered Agenda: {agenda_id|none}
+   - Importance: {importance_value}
+
+Total Urgency: {urgency_score}
+
+Decision: Pattern {A|B|C|D}
+Reasoning: {why_this_pattern}
+
+Planned Response: {response_type}
+</thinking>
+```
+
+### 决策审计日志格式
+
+供L3 [M-04]记录和分析:
+
+```yaml
+decision_log_entry:
+  timestamp: "2025-11-13T10:30:00Z"
+  session_id: "ses_xxx"
+  turn_number: 5
+
+  factors:
+    error_detection: 0.9
+    goal_threatened: 0.72
+    expertise_match: 0.6
+    misrepresented: 0.0
+    silence_too_long: 0.2
+    agenda_opportunity: 0.95
+
+  urgency: 2.499
+  pattern: "A"
+
+  intervention:
+    goal_id: "goal_demand_validation"
+    agenda_id: "agenda_validation_culture"
+    template_used: "strong_intervention"
+
+  outcome:
+    user_response: "accepted|rejected|neutral|unknown"
+    effectiveness: 0.85  # 0-1评分
+    notes: "User added validation analysis"
+```
+
+### 常见决策场景速查表
+
+| Scenario | Typical Factors | Expected Urgency | Pattern |
+|----------|----------------|------------------|---------|
+| 严重方法学错误 | error=0.9, goal=0.72, exp=0.6 | 1.8-2.5 | A |
+| 缺失报告规范 | goal=0.64, exp=0.6, agenda=0.6 | 1.0-1.4 | B |
+| 轻微改进建议 | exp=0.6, silence=0.3, agenda=0.4 | 0.5-0.7 | C |
+| 非专长领域 | exp=0.0, silence=0.2 | 0.1-0.3 | D |
+| 误解澄清 | misrep=0.7, exp=0.6 | 0.9-1.2 | B |
+
+### 参数调优指南
+
+当决策效果不理想时:
+
+**症状**: 过度介入(用户感觉被打断太多)
+- **解决**: 提高Pattern A/B阈值(0.85→0.90, 0.60→0.65)
+- **或**: 降低error_detection权重(0.9→0.85)
+
+**症状**: 介入不足(明显错误未指出)
+- **解决**: 降低Pattern A阈值(0.85→0.80)
+- **或**: 提高error_detection权重(0.9→0.95)
+
+**症状**: Agenda推进过于激进
+- **解决**: 降低agenda_opportunity权重(0.75→0.65)
+- **或**: 延长cooldown_period(3→5轮)
+
+**症状**: 在非专长领域误介入
+- **解决**: 提高expertise_match权重(0.6→0.7)
+- **或**: 细化expertise_boundaries定义
+
+---
+
+## 📊 V1.2.1 新增: 性能监控指标
+
+### 关键性能指标(KPIs)
+
+1. **介入准确率(Precision)**
+   - 定义: 介入时确实存在问题的比例
+   - 计算: 用户接受的介入 / 总介入次数
+   - 目标: ≥ 0.90
+
+2. **问题捕获率(Recall)**
+   - 定义: 有问题时成功介入的比例
+   - 计算: 需事后人工review
+   - 目标: ≥ 0.85
+
+3. **Pattern分布**
+   - 健康分布: A(10-15%), B(25-30%), C(20-25%), D(35-40%)
+   - 异常: A>30%(过度激进) 或 D>60%(过度沉默)
+
+4. **响应时效性**
+   - 定义: 检测到问题后多少轮内介入
+   - 目标: 严重错误(Pattern A) 应在检测当轮介入
+
+### 自动诊断检查点
+
+```python
+def diagnose_decision_quality(history):
+    """诊断决策系统健康状况"""
+
+    # 检查1: Pattern分布
+    pattern_dist = count_patterns(history)
+    if pattern_dist['A'] > 0.3:
+        alert("可能过度激进: Pattern A占比{:.1%}".format(pattern_dist['A']))
+
+    # 检查2: 连续误判
+    recent_rejections = count_consecutive_rejections(history, window=5)
+    if recent_rejections >= 3:
+        alert("连续{}次介入被拒绝,考虑调整阈值".format(recent_rejections))
+
+    # 检查3: 沉默过久
+    silence_duration = count_silence_streak(history)
+    if silence_duration >= 8:
+        alert("已连续{}轮沉默,检查介入阈值是否过高".format(silence_duration))
+
+    # 检查4: Urgency分布
+    urgency_stats = calculate_urgency_stats(history)
+    if urgency_stats['mean'] < 0.3:
+        alert("平均urgency过低({:.2f}),可能遗漏问题".format(urgency_stats['mean']))
+
+    return diagnostics
+```
+
+---
+
+**Decision Logic Guide Version**: 1.2.1-Optimized
+**Last Updated**: 2025-11-13
+**Status**: Production Ready (Optimized)
+
+**Changelog V1.2.1**:
+- ✅ 修正agenda_opportunity权重计算不一致问题
+- ✅ 添加决策可解释性框架
+- ✅ 新增性能监控和自动诊断机制
+- ✅ 提供参数调优指南和决策场景速查表
