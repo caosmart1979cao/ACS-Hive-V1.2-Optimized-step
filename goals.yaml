@@ -1,0 +1,240 @@
+# Active Goals - Top-Tier Peer Reviewer Objectives
+# 聚焦于提升科研质量，而非特定研究项目
+
+active_goals:
+
+# ============================================================================
+# Tier 1: 核心方法论卫士目标 (Priority 0.85-0.95)
+# ============================================================================
+
+- id: goal_ensure_adequate_power
+  description: "确保所有研究具有充分的统计功效"
+  priority: 0.95
+  status: active
+  related_topics:
+  - "sample size"
+  - "power analysis"
+  - "statistical power"
+  - "N="
+  - "pilot study"
+  threat_signals:
+  - "N<30 without justification"
+  - "no power calculation"
+  - "underpowered"
+  - "preliminary but conclusive"
+  intervention_template: |
+    ⚠️ 样本量问题：
+    当前样本量为N={detected_n}。请提供：
+    1. 事先的样本量计算（effect size, alpha, power）
+    2. 若为pilot study，明确说明exploratory nature
+    3. 若样本量不足，讨论对统计推断的影响
+
+- id: goal_demand_validation
+  description: "要求所有预测模型必须经过适当验证"
+  priority: 0.90
+  status: active
+  related_topics:
+  - "prediction model"
+  - "validation"
+  - "overfitting"
+  - "internal validation"
+  - "external validation"
+  - "AUC"
+  - "C-index"
+  threat_signals:
+  - "high AUC without validation"
+  - "no cross-validation"
+  - "training data only"
+  - "good performance but"
+  intervention_template: |
+    ⚠️ 模型验证缺失：
+    报告了模型性能，但未见充分验证。建议：
+    1. 内部验证：Bootstrap (推荐), k-fold CV, 或split-sample
+    2. 外部验证：独立队列（金标准）
+    3. 报告训练集与验证集的性能对比
+    4. 评估过拟合风险
+
+- id: goal_causal_language_precision
+  description: "确保因果语言使用的精确性和正确性"
+  priority: 0.90
+  status: active
+  related_topics:
+  - "causal"
+  - "leads to"
+  - "results in"
+  - "effect of"
+  - "impact of"
+  threat_signals:
+  - "X causes Y" in observational study
+  - "X leads to Y" without RCT
+  - "effect of X" without proper causal inference
+  intervention_template: |
+    ⚠️ 因果语言不当：
+    检测到因果性表述，但研究设计为{study_design}。
+    建议：
+    1. 观察性研究：使用"associated with", "correlated with"
+    2. 若主张因果：明确说明满足的Bradford Hill标准
+    3. 讨论潜在混杂和反向因果
+    4. 或使用工具变量/RDD等因果推断方法
+
+- id: goal_multiple_testing_correction
+  description: "强制要求多重比较校正"
+  priority: 0.85
+  status: active
+  related_topics:
+  - "multiple comparisons"
+  - "multiple testing"
+  - "Bonferroni"
+  - "FDR"
+  - "subgroup analysis"
+  threat_signals:
+  - ">5 tests without correction"
+  - "multiple outcomes without adjustment"
+  - "exploratory subgroups presented as confirmatory"
+  intervention_template: |
+    ⚠️ 多重比较未校正：
+    检测到{n_tests}个统计检验，但未见校正说明。
+    建议：
+    1. 主要分析：明确单一primary outcome
+    2. 次要分析：使用Bonferroni, Holm, 或FDR校正
+    3. 探索性分析：明确标注exploratory，降低解读强度
+
+# ============================================================================
+# Tier 2: 报告规范目标 (Priority 0.70-0.85)
+# ============================================================================
+
+- id: goal_reporting_standards_compliance
+  description: "确保研究报告遵循国际标准（CONSORT/STROBE/TRIPOD等）"
+  priority: 0.80
+  status: active
+  related_topics:
+  - "CONSORT"
+  - "STROBE"
+  - "TRIPOD"
+  - "PRISMA"
+  - "reporting guideline"
+  threat_signals:
+  - "missing flowchart" in RCT
+  - "no reporting checklist"
+  - "incomplete methods"
+  intervention_template: |
+    📋 报告规范建议：
+    当前研究类型为{study_type}，建议遵循{guideline}规范。
+    关键缺失项：
+    {missing_items}
+    
+    建议补充以提升报告质量和可重复性。
+
+- id: goal_transparent_statistics
+  description: "要求统计报告的完整性和透明性"
+  priority: 0.75
+  status: active
+  related_topics:
+  - "confidence interval"
+  - "effect size"
+  - "missing data"
+  - "assumptions"
+  threat_signals:
+  - "p-value only without CI"
+  - "no effect size reported"
+  - "missing data handling unclear"
+  - "assumptions not checked"
+  intervention_template: |
+    📊 统计报告不完整：
+    建议补充：
+    1. 效应量 + 95% CI（不只是p值）
+    2. 缺失数据比例及处理方法
+    3. 统计方法的假设检验结果
+    4. 完整的描述性统计
+
+- id: goal_limitations_discussion
+  description: "要求充分且诚实的局限性讨论"
+  priority: 0.70
+  status: active
+  related_topics:
+  - "limitations"
+  - "weaknesses"
+  - "bias"
+  threat_signals:
+  - "no limitation section"
+  - "limitations too brief"
+  - "obvious biases not discussed"
+  intervention_template: |
+    ⚠️ 局限性讨论不足：
+    任何研究都有局限性。建议讨论：
+    1. 内部效度威胁（选择偏倚、混杂、测量误差）
+    2. 外部效度（generalizability限制）
+    3. 统计局限（样本量、检验效能）
+    4. 对结论解读的影响
+
+# ============================================================================
+# Tier 3: 科学诚信目标 (Priority 0.85-0.95)
+# ============================================================================
+
+- id: goal_detect_questionable_practices
+  description: "识别可疑研究实践（QRPs）"
+  priority: 0.90
+  status: active
+  related_topics:
+  - "p-hacking"
+  - "HARKing"
+  - "selective reporting"
+  - "data dredging"
+  threat_signals:
+  - "p = 0.049"
+  - "hypothesis emerged from data"
+  - "only significant results shown"
+  - "post-hoc subgroups"
+  intervention_template: |
+    🚨 可疑研究实践警告：
+    检测到{qrp_type}迹象。
+    
+    建议：
+    1. 区分confirmatory vs exploratory分析
+    2. 报告所有计划的分析（包括非显著结果）
+    3. 明确说明事先假设 vs 事后解释
+    4. 如为探索性，明确标注并降低解读强度
+
+- id: goal_reproducibility
+  description: "促进研究的可重复性"
+  priority: 0.85
+  status: active
+  related_topics:
+  - "reproducibility"
+  - "code availability"
+  - "data sharing"
+  - "protocol"
+  threat_signals:
+  - "insufficient methodological detail"
+  - "no code/data availability statement"
+  - "custom methods without description"
+  intervention_template: |
+    🔄 可重复性建议：
+    为提升研究可重复性，建议：
+    1. 提供详细的方法描述（足以让他人重复）
+    2. 公开数据/代码（或说明为何不能）
+    3. 报告所有参数选择的理由
+    4. 提供补充材料（详细流程、代码等）
+
+# ============================================================================
+# Proactivity Settings
+# ============================================================================
+
+intervention_thresholds:
+  critical: 0.85        # Tier 1核心目标受威胁 → 立即强介入
+  high: 0.70           # Tier 2报告规范问题 → 中度介入
+  moderate: 0.50       # Tier 3可改进项 → 温和建议
+  watch: 0.30          # 以下保持观察，不主动介入
+
+# ============================================================================
+# Goal Progress Tracking (Template)
+# ============================================================================
+
+progress_tracking:
+  # 由L3 [M-04]和[M-01]负责更新
+  # 格式：{goal_id: {interventions: N, successes: M, last_update: date}}
+  
+  metrics:
+    intervention_count: 0      # 总介入次数
+    acceptance_rate: 0.0       # 建议被采纳比例
+    impact_score: 0.0          # 综合影响力评分

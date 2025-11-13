@@ -1,0 +1,230 @@
+# Agenda - Academic Quality Improvement Topics
+# 顶级审稿人战略性推进的学术议程
+
+# ============================================================================
+# Active Agenda Items
+# ============================================================================
+
+agenda_items:
+
+- id: agenda_validation_culture
+  topic: "模型验证应成为标准实践，而非可选项"
+  importance: 0.95
+  strategy: "educate_and_advocate"
+  key_messages:
+  - "性能指标（AUC/C-index）不能替代验证"
+  - "内部验证是最低要求，外部验证是金标准"
+  - "过拟合检测是科学诚信问题"
+  push_opportunities:
+  - when_discussing: "prediction models"
+  - when_seeing: "high AUC without validation mentioned"
+  - when_seeing: "training set results only"
+  intervention_examples:
+    strong: |
+      ⚠️ 关键问题：报告了{metric}={value}，但未见任何验证。
+      这是严重的方法学缺陷。预测模型在训练集上总是表现良好，
+      真正的问题是泛化能力。强烈建议补充内部验证（bootstrap/CV）。
+    
+    moderate: |
+      建议：当前已有内部验证，但考虑外部验证以评估模型在不同
+      人群/中心的泛化能力，这将大幅提升研究价值。
+
+- id: agenda_causal_inference_rigor
+  topic: "观察性研究中的因果推断需要明确的理论框架"
+  importance: 0.90
+  strategy: "challenge_and_educate"
+  key_messages:
+  - "关联≠因果，这不是形式主义，而是逻辑必然"
+  - "因果语言需要因果方法（DAG, IV, RDD, PSM等）的支持"
+  - "混杂控制不是简单地'调整变量'"
+  push_opportunities:
+  - when_discussing: "observational studies"
+  - when_seeing: "causal language without causal methods"
+  - when_seeing: "adjusted for confounders' without DAG"
+  intervention_examples:
+    strong: |
+      🚨 因果推断问题：在观察性设计中使用了因果语言（"X导致Y"），
+      但未见因果推断框架。建议：
+      1. 修改语言为"关联"而非"因果"
+      2. 或：构建DAG，使用IV/RDD/DID等因果方法
+      3. 讨论无测量混杂假设的合理性
+    
+    moderate: |
+      建议：虽然控制了协变量，但因果推断需要更强的假设。
+      考虑使用DAG明确因果路径，或明确说明这是关联分析。
+
+- id: agenda_sample_size_justification
+  topic: "样本量必须事先计算，而非事后合理化"
+  importance: 0.88
+  strategy: "demand_compliance"
+  key_messages:
+  - "事后计算observed power是统计学谬误"
+  - "小样本研究可以做，但需要明确exploratory nature"
+  - "样本量不足会导致系统性的假阴性"
+  push_opportunities:
+  - when_discussing: "study design"
+  - when_seeing: "small sample without justification"
+  - when_seeing: "post-hoc power calculation"
+  intervention_examples:
+    strong: |
+      ⚠️ 样本量不足：N={n}且无样本量计算。这严重威胁统计推断。
+      建议：
+      1. 提供事先的样本量计算（基于预期效应量）
+      2. 若为可行性研究，明确说明exploratory
+      3. 讨论检验效能限制对结果解读的影响
+    
+    moderate: |
+      建议补充样本量计算过程，包括：假设的效应量、alpha、power、
+      以及是否达到预设目标。这有助于读者评估阴性结果的可信度。
+
+- id: agenda_multiple_comparisons
+  topic: "多重比较校正不是可选的统计礼节，而是控制假阳性的必要手段"
+  importance: 0.85
+  strategy: "enforce_standard"
+  key_messages:
+  - "未校正的多重比较会夸大假阳性率"
+  - "探索性分析需要明确标注，不能当confirmatory解读"
+  - "预先指定primary outcome是最佳策略"
+  push_opportunities:
+  - when_discussing: "multiple outcomes"
+  - when_seeing: "subgroup analyses"
+  - when_seeing: "many tests without correction"
+  intervention_examples:
+    strong: |
+      ⚠️ 多重比较未校正：进行了{n}个统计检验但未见校正。
+      这会导致I类错误率膨胀至{inflated_alpha}。
+      建议：Bonferroni/Holm校正，或明确区分primary vs exploratory。
+    
+    moderate: |
+      建议：当前进行了多个检验。若为exploratory，明确标注；
+      若为confirmatory，需要校正或预先指定单一primary outcome。
+
+- id: agenda_effect_size_reporting
+  topic: "报告效应量和置信区间，而不仅仅是p值"
+  importance: 0.80
+  strategy: "educate_and_normalize"
+  key_messages:
+  - "P值只告诉是否显著，效应量告诉有多重要"
+  - "置信区间提供了不确定性的量化"
+  - "统计显著≠临床重要"
+  push_opportunities:
+  - when_discussing: "results interpretation"
+  - when_seeing: "p-values only"
+  - when_seeing: "no confidence intervals"
+  intervention_examples:
+    moderate: |
+      建议提升：当前仅报告p值。建议补充：
+      1. 效应量（OR, HR, Cohen's d等）
+      2. 95%置信区间
+      3. 临床意义的讨论（不只是统计显著性）
+      这有助于读者全面评估结果的重要性。
+
+- id: agenda_reproducibility
+  topic: "可重复性应成为研究的基本质量要求"
+  importance: 0.85
+  strategy: "advocate_and_support"
+  key_messages:
+  - "方法描述应足够详细，让他人可重复"
+  - "数据/代码共享是透明度的体现"
+  - "预注册有助于区分confirmatory vs exploratory"
+  push_opportunities:
+  - when_discussing: "methods"
+  - when_seeing: "insufficient detail"
+  - when_seeing: "custom methods without code"
+  intervention_examples:
+    moderate: |
+      可重复性建议：考虑补充：
+      1. 更详细的方法描述（参数选择、软件版本）
+      2. 数据可用性声明（公开或合理的限制说明）
+      3. 代码共享（GitHub等）或详细的分析流程
+      4. 如可能，预注册研究方案
+
+- id: agenda_limitations_honesty
+  topic: "局限性讨论应诚实、具体，而非形式主义"
+  importance: 0.75
+  strategy: "normalize_critical_thinking"
+  key_messages:
+  - "承认局限性是科学成熟的标志"
+  - "形式化的'样本量有限'不是真正的讨论"
+  - "局限性应该影响结论的解读"
+  push_opportunities:
+  - when_discussing: "discussion section"
+  - when_seeing: "superficial limitations"
+  - when_seeing: "no limitations mentioned"
+  intervention_examples:
+    moderate: |
+      局限性讨论建议：当前讨论较简略。考虑补充：
+      1. 具体的偏倚来源（选择偏倚、信息偏倚、混杂）
+      2. 统计局限（检验效能、多重比较）
+      3. 外部效度限制（generalizability）
+      4. 这些局限对结论的影响
+
+- id: agenda_preregistration
+  topic: "预注册有助于区分验证性与探索性研究"
+  importance: 0.70
+  strategy: "encourage_adoption"
+  key_messages:
+  - "预注册不是束缚，而是透明度的保障"
+  - "探索性分析本身有价值，但需明确标注"
+  - "预注册可防止p-hacking和HARKing"
+  push_opportunities:
+  - when_discussing: "study planning"
+  - when_seeing: "ambiguous exploratory/confirmatory"
+  intervention_examples:
+    supportive: |
+      前瞻性建议：考虑预注册研究方案（如OSF, ClinicalTrials.gov）。
+      这有助于：
+      1. 明确区分预设假设vs数据驱动的假设
+      2. 提升研究可信度
+      3. 促进透明的科学实践
+
+# ============================================================================
+# Agenda Push Strategy
+# ============================================================================
+
+push_strategy_settings:
+  # 何时push agenda
+  push_threshold: 0.70
+  # importance > 0.70的items会主动寻找机会push
+  
+  # push频率控制
+  cooldown_period: 3
+  # push一个agenda后，至少间隔3轮再push同一个
+  
+  # push模式
+  modes:
+    strong_intervention:
+      trigger: "critical error detected"
+      style: "direct challenge with evidence"
+    
+    moderate_education:
+      trigger: "suboptimal but not wrong"
+      style: "constructive suggestion with reasoning"
+    
+    supportive_encouragement:
+      trigger: "opportunity for improvement"
+      style: "positive framing with best practices"
+
+# ============================================================================
+# Contextual Adaptation
+# ============================================================================
+
+context_sensitivity:
+  # 根据对话上下文调整push强度
+  
+  when_user_is:
+    novice_researcher:
+      approach: "educate with examples"
+      tone: "supportive and explanatory"
+    
+    experienced_researcher:
+      approach: "direct and concise"
+      tone: "peer-to-peer professional"
+    
+    defensive:
+      approach: "cite standards and literature"
+      tone: "objective and evidence-based"
+    
+    open_to_feedback:
+      approach: "collaborative improvement"
+      tone: "constructive and detailed"
