@@ -768,12 +768,860 @@ V2.0决策逻辑的核心改进：
 
 ---
 
-**Version**: 2.0.0
-**Last Updated**: 2025-11-13
-**Status**: Production Ready
+**Version**: 2.1.0
+**Last Updated**: 2025-11-16
+**Status**: Production Ready (V2.1 with Memory System)
 **Dependencies**:
 - decision_logic_guide.md (V1.2.1)
 - beliefs.yaml (V2.0)
 - writing_guidance.yaml (V2.0)
 - strategic_thinking.yaml (V2.0)
 - mentorship_goals.yaml (V2.0)
+- memory_system.yaml (V2.1) ⭐ NEW
+- memory_operations_guide.md (V2.1) ⭐ NEW
+
+---
+
+# V2.1 Extension: Hooks Lifecycle Integration
+
+**新增日期**: 2025-11-16
+**核心功能**: Pre/Post Hooks自动化、内存系统集成、持续学习
+
+**灵感来源**: Claude-Flow v2.7.0的生命周期管理机制
+
+---
+
+## 概述：从V2.0到V2.1
+
+```
+V2.0 (无状态决策)                V2.1 (有记忆决策)
+    ↓                                   ↓
+用户消息 → 决策 → 响应          Pre → 决策 → Post
+                                 ↓            ↓
+                             上下文增强      学习提取
+                             ↓            ↓
+                         内存系统 ←→ 持久化存储
+```
+
+### V2.1核心改进
+
+1. **Pre-Guidance Phase**: 响应前自动加载相关历史
+2. **Post-Guidance Phase**: 响应后自动学习和更新
+3. **Memory Integration**: 跨会话学习和个性化
+4. **Quality Assurance**: 自动质量检查
+
+---
+
+## Pre-Guidance Phase
+
+### 目的
+
+在生成响应**之前**，自动从内存系统加载相关上下文，使决策更加informed。
+
+### 完整流程
+
+```python
+def pre_guidance_phase(user_message, user_id, session_id):
+    """
+    Pre-Guidance阶段：上下文增强
+    在calculate_urgency_v2之前调用
+
+    参考: memory_operations_guide.md::pre_guidance_context_enrichment
+    """
+
+    enriched_context = {}
+
+    # Step 1: Load User Profile
+    # 从SQLite user_profiles表加载能力画像
+    enriched_context['user_profile'] = load_user_profile(user_id)
+
+    # 关键字段:
+    # - overall_level: novice/intermediate/advanced
+    # - skill_study_design, skill_statistics, skill_writing, skill_critical_appraisal
+    # - current_learning_focus
+    # - preferred_mode, response_depth_preference
+
+    # Step 2: Retrieve Recent Interactions (最近5次对话)
+    # 用于理解对话上下文和连续性
+    enriched_context['recent_history'] = query_sql("""
+        SELECT user_message, guidance_response, mode_used, timestamp
+        FROM user_interactions
+        WHERE user_id = ?
+        ORDER BY timestamp DESC
+        LIMIT 5
+    """, [user_id])
+
+    # Step 3: Check Recurring Errors
+    # 检测过去30天内重复出现的错误模式
+    enriched_context['recurring_errors'] = detect_recurring_errors(user_id, lookback_days=30)
+
+    # recurring_errors格式:
+    # [
+    #   {
+    #     'error_type': 'multiple_comparison_no_correction',
+    #     'occurrence_count': 3,
+    #     'last_occurrence': '2025-11-10',
+    #     'recommended_strategies': [...]  # 从guidance_cases检索的最佳纠正策略
+    #   }
+    # ]
+
+    # Step 4: Semantic Search for Similar Success Cases
+    # 从ChromaDB guidance_cases collection检索相似的成功指导案例
+    try:
+        enriched_context['similar_success_cases'] = chromadb_semantic_search(
+            collection="guidance_cases",
+            query=user_message,
+            filters={
+                "user_level": enriched_context['user_profile'].overall_level,
+                "effectiveness_score": {"$gte": 0.8}
+            },
+            top_k=3
+        )
+    except ChromaDBException:
+        # Fallback to SQLite keyword matching
+        enriched_context['similar_success_cases'] = sqlite_keyword_search(
+            user_message,
+            user_level=enriched_context['user_profile'].overall_level
+        )
+
+    # similar_success_cases格式:
+    # [
+    #   {
+    #     'problem_type': 'study_design_selection',
+    #     'user_message': '...',
+    #     'guidance_template': '...',
+    #     'effectiveness_score': 0.92,
+    #     'similarity_score': 0.87
+    #   }
+    # ]
+
+    # Step 5: Identify Current Learning Focus
+    # 从skill_progress表识别用户当前学习重点
+    enriched_context['current_focus'] = query_sql("""
+        SELECT skill_domain, skill_name, current_level
+        FROM skill_progress
+        WHERE user_id = ?
+        ORDER BY advancement_date DESC
+        LIMIT 1
+    """, [user_id])
+
+    # Step 6: Estimate Task Complexity (为Phase 3准备)
+    enriched_context['estimated_complexity'] = estimate_task_complexity(
+        user_message=user_message,
+        user_profile=enriched_context['user_profile']
+    )
+
+    log(f"[Pre-Guidance] Context enriched for session {session_id}")
+    log(f"  • User level: {enriched_context['user_profile'].overall_level}")
+    log(f"  • Recurring errors: {len(enriched_context['recurring_errors'])}")
+    log(f"  • Similar cases found: {len(enriched_context['similar_success_cases'])}")
+
+    return enriched_context
+```
+
+### 集成到V2.0决策流程
+
+```python
+# 修改后的calculate_urgency_v2函数
+
+def calculate_urgency_v2_enhanced(user_message, user_id, session_id):
+    """
+    V2.1增强版urgency计算
+    集成Pre-Guidance上下文增强
+    """
+
+    # 🆕 V2.1: Pre-Guidance Phase
+    enriched_context = pre_guidance_phase(user_message, user_id, session_id)
+
+    # V2.0: 8-factor检测 (现在可以使用enriched_context)
+    factors = {
+        'error_detection': detect_error(user_message),
+
+        'goal_threatened': check_goal_threat(user_message),
+
+        'expertise_match': calculate_expertise_match(user_message),
+
+        'misrepresented': detect_misrepresentation(user_message),
+
+        'silence_too_long': calculate_silence_duration(enriched_context['recent_history']),  # 🆕 使用历史
+
+        'agenda_opportunity': detect_agenda_opportunity(user_message),
+
+        # 🆕 V2.1: 使用enriched_context增强检测
+        'growth_opportunity': detect_growth_opportunity_enhanced(
+            user_message,
+            user_profile=enriched_context['user_profile'],
+            recurring_errors=enriched_context['recurring_errors'],
+            current_focus=enriched_context['current_focus']
+        ),
+
+        'strategic_insight': detect_strategic_insight_enhanced(
+            user_message,
+            user_profile=enriched_context['user_profile'],
+            recent_history=enriched_context['recent_history']
+        )
+    }
+
+    # 🆕 V2.1: 根据重复错误动态调整权重
+    weights = get_decision_weights()
+
+    if enriched_context['recurring_errors']:
+        # 重复错误检测到，强化error_detection和growth_opportunity
+        weights['error_detection'] *= 1.2
+        weights['growth_opportunity'] *= 1.3
+        log("[Weight Boost] Recurring errors detected, boosting correction weights")
+
+    # 🆕 V2.1: 根据用户历史选择模式
+    recommended_mode = select_mode_from_context(enriched_context)
+    adjusted_weights = apply_mode_adjustments(weights, recommended_mode)
+
+    # 计算urgency
+    urgency = calculate_weighted_sum(factors, adjusted_weights)
+
+    return {
+        'urgency': urgency,
+        'factors': factors,
+        'mode': recommended_mode,
+        'enriched_context': enriched_context  # 🆕 传递给response generation
+    }
+```
+
+### 增强的Factor检测
+
+```python
+def detect_growth_opportunity_enhanced(user_message, user_profile, recurring_errors, current_focus):
+    """
+    V2.1增强版growth_opportunity检测
+    利用内存系统的上下文
+    """
+
+    score = 0.0
+    opportunities = []
+
+    # 原有的V2.0检测逻辑 (uncertainty, decision_points, learning_intent)
+    base_score, base_opps = detect_growth_opportunity(user_message, user_profile, None)
+    score += base_score
+    opportunities.extend(base_opps)
+
+    # 🆕 V2.1: 基于recurring_errors的检测
+    if recurring_errors:
+        for error in recurring_errors:
+            # 检查当前消息是否与重复错误相关
+            if is_message_related_to_error(user_message, error['error_type']):
+                score += 0.95  # 最高优先级
+                opportunities.append(f"recurring_error_{error['error_type']}_count_{error['occurrence_count']}")
+
+                log(f"[Growth Opp] Recurring error detected: {error['error_type']} ({error['occurrence_count']} times)")
+                break
+
+    # 🆕 V2.1: 基于current_focus的检测
+    if current_focus:
+        focus_domain = current_focus['skill_domain']
+        # 如果用户消息涉及当前学习重点，视为成长机会
+        if is_message_related_to_domain(user_message, focus_domain):
+            score += 0.7
+            opportunities.append(f"aligned_with_current_focus_{focus_domain}")
+
+            log(f"[Growth Opp] Message aligned with current focus: {focus_domain}")
+
+    return min(score, 1.0), opportunities
+```
+
+---
+
+## Post-Guidance Phase
+
+### 目的
+
+在生成响应**之后**，自动评估质量、提取学习点、更新内存系统。
+
+### 完整流程
+
+```python
+def post_guidance_phase(user_message, guidance_response, decision_result, user_id, session_id):
+    """
+    Post-Guidance阶段：学习提取和内存更新
+    在返回响应给用户之后调用（异步）
+
+    参考: memory_operations_guide.md::post_guidance_learning_extraction
+    """
+
+    learning_results = {}
+
+    # Step 1: Quality Self-Check
+    quality_score = evaluate_guidance_quality(
+        guidance_response=guidance_response,
+        decision_result=decision_result,
+        enriched_context=decision_result['enriched_context']
+    )
+
+    learning_results['quality_score'] = quality_score
+
+    if quality_score < 0.6:
+        log(f"⚠️ [Quality] Low quality guidance detected (score={quality_score:.2f})")
+        # 标记为需要改进，未来可触发人工审核
+
+    log(f"✓ [Quality] Self-check completed: {quality_score:.2f}")
+
+    # Step 2: Extract Learning Insights
+    insights = extract_learning_insights(
+        user_message=user_message,
+        guidance_response=guidance_response,
+        enriched_context=decision_result['enriched_context']
+    )
+
+    learning_results['insights'] = insights
+
+    # insights格式:
+    # {
+    #   'problem_type': 'study_design_selection',
+    #   'skill_demonstrated': ['understanding_RCT', 'identify_confounders'],
+    #   'skill_advancement': True,
+    #   'new_level': 0.6,
+    #   'advancement_evidence': '用户正确识别了混杂因素',
+    #   'user_confusion_points': ['unclear about propensity score']
+    # }
+
+    # Step 3: Update Skill Progress (if advancement detected)
+    if insights['skill_advancement']:
+        update_skill_progress(
+            user_id=user_id,
+            skill_domain=insights['skill_domain'],
+            new_level=insights['new_level'],
+            evidence=insights['advancement_evidence']
+        )
+
+        log(f"🎓 [Skill Up] {insights['skill_domain']} → {insights['new_level']}")
+
+    # Step 4: Update User Profile Statistics
+    update_user_profile_stats(
+        user_id=user_id,
+        total_interactions=1,  # increment
+        errors_detected=len(decision_result['factors']['error_detection']),
+        guidance_provided=1
+    )
+
+    # Step 5: Store Interaction to Memory
+    interaction_record = {
+        "session_id": session_id,
+        "user_id": user_id,
+        "user_message": user_message,
+        "guidance_response": guidance_response,
+        "mode_used": decision_result['mode'],
+        "complexity_score": decision_result['enriched_context']['estimated_complexity'],
+        "quality_score": quality_score,
+        "timestamp": now()
+    }
+
+    # 存入SQLite user_interactions表
+    insert_into_table("user_interactions", interaction_record)
+
+    # 🆕 V2.1: 存入ChromaDB (仅存储中高质量交互)
+    if quality_score >= 0.7:
+        add_to_chromadb_async(
+            collection="user_interactions",
+            document=user_message + "\n" + guidance_response,
+            metadata=interaction_record
+        )
+
+    log(f"✓ [Storage] Interaction stored (quality={quality_score:.2f})")
+
+    # Step 6: Store as Guidance Case (仅高质量案例)
+    if quality_score >= 0.85:
+        guidance_case = {
+            "case_id": generate_case_id(),
+            "problem_type": insights['problem_type'],
+            "user_level": decision_result['enriched_context']['user_profile'].overall_level,
+            "guidance_strategy": decision_result['mode'],
+            "effectiveness_score": quality_score,
+            "user_message": user_message,
+            "guidance_template": extract_template(guidance_response),
+            "tags": extract_tags(insights)
+        }
+
+        add_to_chromadb(
+            collection="guidance_cases",
+            document=guidance_response,
+            metadata=guidance_case
+        )
+
+        log(f"✨ [Best Practice] Stored as high-quality guidance case (score={quality_score:.2f})")
+
+    # Step 7: Pattern Learning (为V2.5 Neural Learning准备)
+    # 记录 (问题类型, 策略, 效果) 三元组
+    store_pattern_triple(
+        problem_type=insights['problem_type'],
+        strategy=decision_result['mode'],
+        effectiveness=quality_score
+    )
+
+    learning_results['stored'] = True
+
+    log(f"✓ [Post-Guidance] Learning extraction completed for session {session_id}")
+
+    return learning_results
+```
+
+---
+
+## Quality Self-Check
+
+### 自动质量评估标准
+
+```python
+def evaluate_guidance_quality(guidance_response, decision_result, enriched_context):
+    """
+    自动评估生成的guidance质量
+    基于多维度检查
+
+    参考: CLAUDE_FLOW_INSIGHTS.md::Phase 2::quality_check
+    """
+
+    score = 1.0  # 初始满分
+    issues = []
+
+    # Check 1: 是否引用了具体标准/文献? (权重: 0.15)
+    has_references = check_for_references(guidance_response)
+    # 检测关键词: "CONSORT", "STROBE", "et al.", "2023", "研究显示"
+    if not has_references:
+        score -= 0.15
+        issues.append("missing_references")
+
+    # Check 2: 是否提供了可操作建议? (权重: 0.20)
+    has_actionable = check_for_actionable_advice(guidance_response)
+    # 检测: "建议", "可以", "应该", "步骤", "方法"
+    if not has_actionable:
+        score -= 0.20
+        issues.append("missing_actionable_advice")
+
+    # Check 3: 是否匹配用户能力水平? (权重: 0.15)
+    user_level = enriched_context['user_profile'].overall_level
+    complexity_match = check_complexity_match(guidance_response, user_level)
+
+    # novice: 避免过度技术术语
+    # intermediate: 平衡解释与专业性
+    # advanced: 可以使用高级概念
+
+    if not complexity_match:
+        score -= 0.15
+        issues.append("complexity_mismatch")
+
+    # Check 4: 是否回答了用户的实际问题? (权重: 0.20)
+    relevance_score = calculate_semantic_relevance(
+        user_message=decision_result['user_message'],
+        guidance_response=guidance_response
+    )
+
+    if relevance_score < 0.7:
+        score -= 0.20
+        issues.append("low_relevance")
+
+    # Check 5: 语言是否professional且constructive? (权重: 0.10)
+    tone_analysis = analyze_tone(guidance_response)
+    # 检测: 是否过于严厉、是否有建设性、是否有鼓励
+
+    if tone_analysis != "professional_constructive":
+        score -= 0.10
+        issues.append(f"tone_issue_{tone_analysis}")
+
+    # Check 6: 是否利用了similar_success_cases? (权重: 0.10)
+    # 🆕 V2.1: 检查是否有效利用了检索到的成功案例
+    similar_cases = enriched_context.get('similar_success_cases', [])
+    if similar_cases and not check_case_utilization(guidance_response, similar_cases):
+        score -= 0.10
+        issues.append("underutilized_similar_cases")
+
+    # Check 7: 是否针对recurring_errors提供深度指导? (权重: 0.10)
+    # 🆕 V2.1: 如果检测到重复错误，必须提供深度教学
+    recurring_errors = enriched_context.get('recurring_errors', [])
+    if recurring_errors and decision_result['factors']['growth_opportunity'] > 0.9:
+        # 应该包含: 概念框架、多个例子、练习题
+        has_deep_teaching = check_deep_teaching_components(guidance_response)
+        if not has_deep_teaching:
+            score -= 0.10
+            issues.append("shallow_teaching_for_recurring_error")
+
+    final_score = max(score, 0.0)
+
+    if issues:
+        log(f"[Quality] Issues detected: {', '.join(issues)}")
+
+    return final_score
+```
+
+### Quality Check辅助函数
+
+```python
+def check_for_references(text):
+    """检查是否包含文献引用或标准"""
+    reference_patterns = [
+        r'\b(CONSORT|STROBE|PRISMA|TRIPOD|STARD)\b',  # 报告规范
+        r'\bet al\.',  # 文献引用
+        r'\b(19|20)\d{2}\b',  # 年份
+        r'研究(显示|表明|发现)',  # 中文研究引用
+        r'(Journal|Lancet|NEJM|BMJ)',  # 期刊名
+    ]
+
+    return any(re.search(pattern, text, re.IGNORECASE) for pattern in reference_patterns)
+
+
+def check_for_actionable_advice(text):
+    """检查是否包含可操作的建议"""
+    actionable_keywords = [
+        '建议', '可以', '应该', '步骤', '方法', '首先', '其次',
+        'recommend', 'suggest', 'should', 'can', 'step', 'method'
+    ]
+
+    return sum(1 for kw in actionable_keywords if kw in text.lower()) >= 2
+
+
+def check_complexity_match(text, user_level):
+    """检查内容复杂度是否匹配用户水平"""
+    # 简化版实现：统计技术术语密度
+
+    advanced_terms = [
+        'propensity score', 'instrumental variable', 'causal diagram',
+        'marginal structural model', 'g-computation', '倾向性评分', '工具变量'
+    ]
+
+    intermediate_terms = [
+        'confounding', 'selection bias', 'regression', 'validation',
+        '混杂', '偏倚', '回归', '验证'
+    ]
+
+    advanced_count = sum(1 for term in advanced_terms if term in text.lower())
+    intermediate_count = sum(1 for term in intermediate_terms if term in text.lower())
+
+    if user_level == 'novice':
+        # 新手：高级术语应少于2个
+        return advanced_count < 2
+
+    elif user_level == 'intermediate':
+        # 中级：允许一些高级术语，但不能过多
+        return advanced_count < 5
+
+    else:  # advanced
+        # 高级：可以自由使用专业术语
+        return True
+
+
+def calculate_semantic_relevance(user_message, guidance_response):
+    """
+    计算响应与用户问题的语义相关性
+    简化版：关键词重叠度
+    """
+    user_keywords = extract_keywords(user_message)
+    response_keywords = extract_keywords(guidance_response)
+
+    overlap = set(user_keywords) & set(response_keywords)
+    relevance = len(overlap) / max(len(user_keywords), 1)
+
+    return relevance
+```
+
+---
+
+## 完整V2.1决策流程示例
+
+### 端到端流程
+
+```python
+def handle_user_message_v2_1(user_message, user_id, session_id):
+    """
+    ACS-Mentor V2.1完整工作流
+    Pre → Decision → Generation → Post
+    """
+
+    log(f"\n{'='*60}")
+    log(f"Session {session_id} - Processing user message")
+    log(f"{'='*60}\n")
+
+    # ========== Phase 1: Pre-Guidance ==========
+    log("[Phase 1] Pre-Guidance: Context enrichment...")
+
+    enriched_context = pre_guidance_phase(
+        user_message=user_message,
+        user_id=user_id,
+        session_id=session_id
+    )
+
+    log(f"✓ Context loaded:")
+    log(f"  • User level: {enriched_context['user_profile'].overall_level}")
+    log(f"  • Recent interactions: {len(enriched_context['recent_history'])}")
+    log(f"  • Recurring errors: {len(enriched_context['recurring_errors'])}")
+    log(f"  • Similar success cases: {len(enriched_context['similar_success_cases'])}")
+
+    # ========== Phase 2: Decision & Urgency Calculation ==========
+    log("\n[Phase 2] Decision: Calculating urgency and selecting mode...")
+
+    decision_result = calculate_urgency_v2_enhanced(
+        user_message=user_message,
+        user_id=user_id,
+        session_id=session_id
+    )
+
+    log(f"✓ Decision made:")
+    log(f"  • Urgency: {decision_result['urgency']:.2f}")
+    log(f"  • Mode: {decision_result['mode']}")
+    log(f"  • Top factors:")
+    sorted_factors = sorted(
+        decision_result['factors'].items(),
+        key=lambda x: x[1] if isinstance(x[1], (int, float)) else 0,
+        reverse=True
+    )
+    for factor, score in sorted_factors[:3]:
+        if isinstance(score, (int, float)) and score > 0:
+            log(f"    - {factor}: {score:.2f}")
+
+    # ========== Phase 3: Response Generation ==========
+    log("\n[Phase 3] Generation: Creating guidance response...")
+
+    # 使用enriched_context中的similar_success_cases作为模板
+    guidance_response = generate_guidance_response(
+        user_message=user_message,
+        decision_result=decision_result,
+        template_cases=enriched_context['similar_success_cases']
+    )
+
+    log(f"✓ Response generated (length: {len(guidance_response)} chars)")
+
+    # ========== Phase 4: Post-Guidance ==========
+    log("\n[Phase 4] Post-Guidance: Learning extraction and memory update...")
+
+    learning_results = post_guidance_phase(
+        user_message=user_message,
+        guidance_response=guidance_response,
+        decision_result=decision_result,
+        user_id=user_id,
+        session_id=session_id
+    )
+
+    log(f"✓ Learning extracted:")
+    log(f"  • Quality score: {learning_results['quality_score']:.2f}")
+    log(f"  • Skill advancement: {learning_results['insights'].get('skill_advancement', False)}")
+    log(f"  • Stored to memory: {learning_results['stored']}")
+
+    # ========== Phase 5: Skill Advancement Check ==========
+    if learning_results['insights'].get('skill_advancement'):
+        skill_domain = learning_results['insights']['skill_domain']
+        new_level = learning_results['insights']['new_level']
+
+        # 在响应中添加祝贺信息
+        celebration_message = f"\n\n🎉 **恭喜！您在「{skill_domain}」方面已晋级到 {new_level} 水平！**"
+        guidance_response += celebration_message
+
+        log(f"🎓 Skill advancement celebrated: {skill_domain} → {new_level}")
+
+    log(f"\n{'='*60}")
+    log(f"Session {session_id} completed")
+    log(f"{'='*60}\n")
+
+    return guidance_response
+```
+
+### 运行示例
+
+```
+用户消息: "我在做一个RCT研究，但是有20%的missing data，怎么处理？"
+
+============================================================
+Session abc123 - Processing user message
+============================================================
+
+[Phase 1] Pre-Guidance: Context enrichment...
+✓ Context loaded:
+  • User level: intermediate
+  • Recent interactions: 3
+  • Recurring errors: 1 (missing_data_deletion_only)
+  • Similar success cases: 2
+
+[Phase 2] Decision: Calculating urgency and selecting mode...
+[Weight Boost] Recurring errors detected, boosting correction weights
+✓ Decision made:
+  • Urgency: 1.45
+  • Mode: hybrid
+  • Top factors:
+    - growth_opportunity: 0.95 (recurring_error_missing_data_deletion_only_count_2)
+    - expertise_match: 0.80
+    - error_detection: 0.60
+
+[Phase 3] Generation: Creating guidance response...
+✓ Response generated (length: 1850 chars)
+
+[Phase 4] Post-Guidance: Learning extraction and memory update...
+[Quality] Self-check completed: 0.88
+✓ Learning extracted:
+  • Quality score: 0.88
+  • Skill advancement: True
+  • Stored to memory: True
+✨ [Best Practice] Stored as high-quality guidance case (score=0.88)
+🎓 Skill advancement celebrated: statistical_methods → 0.7
+
+============================================================
+Session abc123 completed
+============================================================
+
+返回响应:
+```
+
+🔍 **[Critic] 错误检测**
+
+检测到缺失数据处理不当。20%的missing data是不能忽略的（通常>5%就需要特别处理）。
+
+⚠️ **重要**: 这是您第2次在missing data处理上遇到问题。让我提供更深入的指导。
+
+---
+
+🎓 **[Mentor] 深度概念框架**
+
+**缺失数据的三种机制** (Little & Rubin, 2002):
+
+1. **MCAR** (Missing Completely At Random): 缺失与任何变量无关
+2. **MAR** (Missing At Random): 缺失与观测到的变量相关
+3. **MNAR** (Missing Not At Random): 缺失与未观测的变量相关
+
+**为什么重要?** 不同机制需要不同处理方法。
+
+---
+
+📋 **[Mentor] 处理策略**
+
+**方法1: Multiple Imputation (推荐) ✅**
+- 适用于: MAR假设
+- R包: `mice`
+- 步骤:
+  1. 生成m个完整数据集（通常m=5-20）
+  2. 分别分析每个数据集
+  3. 合并结果 (Rubin's rules)
+
+**方法2: Full Information Maximum Likelihood (FIML)**
+- 适用于: MAR假设，纵向数据
+- R包: `lavaan`
+
+**方法3: Sensitivity Analysis**
+- 对于MNAR的保守策略
+- 测试不同假设下的结果稳健性
+
+---
+
+**❌ 不推荐的方法**:
+- Complete case analysis (listwise deletion) - 损失power且可能有偏
+- Mean imputation - 低估标准误
+
+---
+
+🧪 **[Mentor] 实践练习**
+
+尝试回答:
+1. 您的missing data更可能是MAR还是MNAR？为什么？
+2. 如果缺失主要发生在treatment组，这暗示什么机制？
+
+---
+
+📚 **延伸阅读**:
+- Van Buuren (2018). Flexible Imputation of Missing Data (R `mice`包作者)
+- 报告规范: CONSORT 2010 Extension for Missing Data
+
+---
+
+🎉 **恭喜！您在「statistical_methods」方面已晋级到 0.7 水平！**
+
+```
+
+---
+
+## V2.1性能监控扩展
+
+### 新增指标
+
+```yaml
+v2_1_performance_metrics:
+
+  memory_system_health:
+    - metric: "ChromaDB availability"
+      target: "> 99%"
+      degradation: "Auto-fallback to SQLite"
+
+    - metric: "Retrieval latency (p95)"
+      target: "< 100ms"
+      alert_threshold: "> 200ms"
+
+    - metric: "Memory growth rate"
+      target: "< 10MB/week"
+      alert_threshold: "> 50MB/week"
+
+  context_enrichment_effectiveness:
+    - metric: "Similar case retrieval success rate"
+      target: "> 80%"
+      description: "检索到至少1个相关案例的比例"
+
+    - metric: "Recurring error detection rate"
+      target: "> 95%"
+      description: "成功检测到重复错误的比例"
+
+  guidance_quality:
+    - metric: "Average quality score"
+      target: "> 0.80"
+      alert_threshold: "< 0.70"
+
+    - metric: "High-quality case storage rate"
+      target: "15-25%"
+      description: "quality >= 0.85的案例占比"
+
+  learning_effectiveness:
+    - metric: "Skill advancement rate"
+      target: "平均每月至少1次晋级"
+      measurement: "从skill_progress表统计"
+
+    - metric: "Recurring error elimination rate"
+      target: "> 60%"
+      description: "重复错误被成功纠正（不再出现）的比例"
+```
+
+---
+
+## 总结：V2.1核心价值
+
+### 从V2.0到V2.1的质变
+
+| 维度 | V2.0 | V2.1 |
+|------|------|------|
+| **状态** | 无状态 | 有记忆 |
+| **个性化** | 无 | 深度个性化 |
+| **学习** | 静态知识库 | 持续学习 |
+| **质量保证** | 无 | 自动质检 |
+| **错误处理** | 单次纠正 | 追踪重复错误 |
+| **案例复用** | 无 | 语义搜索成功案例 |
+| **技能追踪** | 手动 | 自动晋级检测 |
+
+### V2.1关键能力
+
+1. ✅ **Pre-Guidance Context Enrichment**: 响应前自动加载6类上下文
+2. ✅ **Post-Guidance Learning Extraction**: 响应后自动学习和更新
+3. ✅ **Recurring Error Detection**: 识别用户重复犯的错误（threshold=2）
+4. ✅ **Semantic Case Retrieval**: 从历史成功案例中检索最佳模板
+5. ✅ **Automatic Quality Check**: 7维度质量自动评估
+6. ✅ **Skill Progression Tracking**: 自动检测和庆祝技能晋级
+7. ✅ **Memory System Integration**: ChromaDB + SQLite混合架构
+
+### 与Claude-Flow对标
+
+| 功能 | Claude-Flow | ACS-Mentor V2.1 |
+|------|-------------|-----------------|
+| Pre-Task Context | ✅ 复杂度评估+任务分配 | ✅ 6-stage上下文增强 |
+| Post-Task Learning | ✅ Neural pattern learning | ✅ 7-check质量评估+学习提取 |
+| Memory System | ✅ AgentDB+ReasoningBank | ✅ ChromaDB+SQLite |
+| Auto-degradation | ✅ Hybrid fallback | ✅ ChromaDB→SQLite→Stateless |
+
+**V2.1达成Claude-Flow的核心工程价值**: 有记忆、可学习、持续优化。
+
+---
+
+**Version**: 2.1.0
+**Last Updated**: 2025-11-16
+**Status**: Production Ready
+**New Capabilities**:
+- Pre/Post Hooks自动化
+- 混合内存系统 (ChromaDB + SQLite)
+- 跨会话学习和个性化
+- 自动质量保证

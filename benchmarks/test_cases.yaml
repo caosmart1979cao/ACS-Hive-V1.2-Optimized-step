@@ -1,0 +1,482 @@
+# ACS-Mentor V2.1 Benchmark Test Cases
+# 用于评估系统性能的标注测试数据集
+
+version: "2.1.0"
+created_date: "2025-11-16"
+total_cases: 30  # 初版包含30个精选案例
+
+# ============================================================================
+# Dataset 1: Methodological Errors (15 cases)
+# ============================================================================
+
+methodological_errors:
+
+  - case_id: "ME_001"
+    category: "ITT_violation"
+    severity: "critical"
+    user_level: "intermediate"
+
+    input:
+      user_message: "我的RCT研究有30%的dropout，我把他们都exclude了，然后分析剩下的数据。结果显示treatment效果显著(p=0.02)。"
+
+    expected_output:
+      error_detected: true
+      error_type: "ITT_violation"
+      error_category: "methodological"
+      error_severity: "critical"
+
+      must_include_guidance:
+        - "违反了Intention-to-Treat (ITT)原则"
+        - "Complete case analysis会导致selection bias"
+        - "应该包含所有随机化的participants"
+        - "建议使用multiple imputation或sensitivity analysis"
+
+      quality_benchmarks:
+        references_standard: true  # 应引用CONSORT
+        actionable_advice: true
+        appropriate_severity: "strong_warning"
+
+  - case_id: "ME_002"
+    category: "multiple_testing_no_correction"
+    severity: "critical"
+    user_level: "novice"
+
+    input:
+      user_message: "我做了10个亚组分析，其中3个p<0.05。我准备只报告这3个significant的结果，其他的不写。"
+
+    expected_output:
+      error_detected: true
+      error_type: "multiple_comparison_no_correction"
+      error_category: "statistical"
+      error_severity: "critical"
+
+      must_include_guidance:
+        - "多重比较必须进行校正"
+        - "选择性报告是p-hacking行为"
+        - "应该报告所有检验结果"
+        - "Bonferroni或FDR校正方法"
+
+      quality_benchmarks:
+        explain_why_wrong: true
+        provide_solution: true
+        education_component: true  # 新手需要解释p-hacking危害
+
+  - case_id: "ME_003"
+    category: "validation_missing"
+    severity: "critical"
+    user_level: "intermediate"
+
+    input:
+      user_message: "我建了一个logistic regression预测模型，在training data上AUC=0.88，感觉很不错！准备投稿了。"
+
+    expected_output:
+      error_detected: true
+      error_type: "model_validation_missing"
+      error_category: "methodological"
+      error_severity: "critical"
+
+      must_include_guidance:
+        - "预测模型必须进行validation"
+        - "Training AUC会过度乐观（overfitting）"
+        - "至少需要internal validation (cross-validation)"
+        - "External validation是gold standard"
+        - "TRIPOD reporting guideline"
+
+      quality_benchmarks:
+        references_standard: true  # TRIPOD
+        severity_appropriate: true
+
+  - case_id: "ME_004"
+    category: "causal_language_in_observational"
+    severity: "moderate"
+    user_level: "novice"
+
+    input:
+      user_message: "我的横断面研究发现社交媒体使用导致抑郁（OR=1.5, p<0.001）。"
+
+    expected_output:
+      error_detected: true
+      error_type: "causal_inference_inappropriate"
+      error_category: "interpretation"
+      error_severity: "moderate"
+
+      must_include_guidance:
+        - "横断面研究不能建立因果关系"
+        - "应该用'关联'而非'导致'"
+        - "缺乏时序性"
+        - "可能存在反向因果"
+        - "如果要推断因果，需要纵向设计或因果推断方法"
+
+      quality_benchmarks:
+        tone: "constructive"  # 不要过于严厉，这是常见新手错误
+        provide_alternatives: true
+
+  - case_id: "ME_005"
+    category: "sample_size_too_small"
+    severity: "critical"
+    user_level: "novice"
+
+    input:
+      user_message: "我的pilot study只有N=25，但是t检验结果p=0.03，significant！可以发表吗？"
+
+    expected_output:
+      error_detected: true
+      error_type: "insufficient_power"
+      error_category: "methodological"
+      error_severity: "critical"
+
+      must_include_guidance:
+        - "样本量过小（N=25）"
+        - "即使p<0.05，statistical power可能不足"
+        - "pilot study结果不够robust"
+        - "建议: 事先样本量计算"
+        - "需要在larger sample中验证"
+
+      quality_benchmarks:
+        explain_power_concept: true
+        not_discourage: true  # 鼓励扩大样本而非放弃
+
+  # ... 更多methodological_errors案例（共15个）
+
+# ============================================================================
+# Dataset 2: Novice Questions (8 cases)
+# ============================================================================
+
+novice_questions:
+
+  - case_id: "NQ_001"
+    user_level: "novice"
+    complexity: "trivial"
+
+    input:
+      user_message: "p值是什么意思？"
+
+    expected_output:
+      complexity_score: [0.1, 0.25]
+      routed_mode: "quick_guidance"
+
+      expected_response_characteristics:
+        max_length: 250
+        must_include:
+          - "p值的定义"
+          - "简洁清晰，1-2句话"
+        must_not_include:
+          - "过度技术细节"
+          - "多个例子"
+
+      quality_benchmarks:
+        appropriate_for_novice: true
+        concise: true
+
+  - case_id: "NQ_002"
+    user_level: "novice"
+    complexity: "simple"
+
+    input:
+      user_message: "我的数据是比较两组人的血压（连续变量），应该用什么统计方法？"
+
+    expected_output:
+      complexity_score: [0.2, 0.4]
+      routed_mode: "quick_guidance"
+
+      expected_response_characteristics:
+        must_include:
+          - "判断逻辑（数据类型 → 统计方法）"
+          - "t检验或Mann-Whitney U test"
+          - "前提假设"
+
+      quality_benchmarks:
+        decision_tree_provided: true
+        actionable: true
+
+  - case_id: "NQ_003"
+    user_level: "novice"
+    complexity: "moderate"
+
+    input:
+      user_message: "我不太理解为什么要做validation，我的模型AUC已经很高了，validation还有必要吗？"
+
+    expected_output:
+      complexity_score: [0.4, 0.6]
+      routed_mode: "mentor_lite"
+
+      expected_response_characteristics:
+        must_include:
+          - "Overfitting概念解释"
+          - "为什么training AUC不够"
+          - "1个具体例子"
+
+      quality_benchmarks:
+        conceptual_understanding: true
+        example_provided: true
+        length: [400, 700]  # mentor_lite范围
+
+  - case_id: "NQ_004"
+    user_level: "novice"
+    complexity: "moderate"
+
+    input:
+      user_message: "我完全不知道怎么做因果推断，能从零开始教我吗？我的数据是观察性的。"
+
+    expected_output:
+      complexity_score: [0.6, 0.8]  # 高不确定性
+      routed_mode: "deep_mentorship"
+
+      expected_response_characteristics:
+        must_include:
+          - "从基础概念开始"
+          - "因果 vs. 关联的区别"
+          - "分层次的学习路径"
+          - "鼓励性语言"
+          - "提示可以继续提问"
+
+      quality_benchmarks:
+        patient_tone: true
+        layered_explanation: true
+        not_overwhelming: true
+        encourages_interaction: true
+
+  # ... 更多novice_questions案例（共8个）
+
+# ============================================================================
+# Dataset 3: Strategic Scenarios (4 cases)
+# ============================================================================
+
+strategic_scenarios:
+
+  - case_id: "SS_001"
+    user_level: "advanced"
+    complexity: "very_complex"
+
+    input:
+      user_message: "我想研究社交媒体对青少年心理健康的因果效应，但RCT不可行（伦理问题）。我的目标是NEJM-level期刊。应该如何设计quasi-experimental研究？需要考虑哪些识别策略和稳健性检验？"
+
+    expected_output:
+      complexity_score: [0.75, 0.95]
+      routed_mode: "deep_mentorship"  # 即使advanced，因complexity极高
+
+      expected_response_characteristics:
+        must_include:
+          - "多个quasi-experimental设计选项"
+          - "Tradeoffs分析（IV vs DID vs RDD）"
+          - "识别假设的明确说明"
+          - "稳健性检验策略（E-value, placebo test等）"
+          - "NEJM审稿标准考量"
+          - "实际案例参考"
+
+      quality_benchmarks:
+        strategic_depth: true
+        multiple_options: true
+        tradeoffs_analysis: true
+        references_top_tier_standards: true
+        practical_feasibility: true
+
+  - case_id: "SS_002"
+    user_level: "intermediate"
+    complexity: "complex"
+
+    input:
+      user_message: "我是博士生，想规划我的第一个独立研究项目。主题是倾向性评分在真实世界数据中的应用。但不知道应该focus on方法学创新还是实际应用，也担心竞争激烈。能给我一些career development的建议吗？"
+
+    expected_output:
+      complexity_score: [0.65, 0.80]
+      routed_mode: "strategic_advisor"
+
+      expected_response_characteristics:
+        must_include:
+          - "Career stage考量（博士生第一项目）"
+          - "方法创新 vs. 应用的tradeoffs"
+          - "该领域的饱和度评估"
+          - "Differentiation策略"
+          - "Feasibility与impact的平衡"
+          - "时间管理建议"
+
+      quality_benchmarks:
+        career_awareness: true
+        realistic_assessment: true
+        actionable_next_steps: true
+        encouragement: true
+
+  # ... 更多strategic_scenarios案例（共4个）
+
+# ============================================================================
+# Dataset 4: Recurring Error Scenarios (3 cases)
+# ============================================================================
+
+recurring_error_scenarios:
+
+  - case_id: "RE_001"
+    scenario_type: "recurring_validation_missing"
+    user_id: "test_user_recurring_001"
+
+    turns:
+      - turn: 1
+        input:
+          user_message: "我建了一个预测心血管疾病的模型，AUC=0.82，还不错吧？"
+
+        expected_output:
+          error_detected: true
+          error_type: "validation_missing"
+          recurring: false
+          response_mode: "critic"
+
+          must_include:
+            - "需要validation"
+            - "Training AUC可能过于乐观"
+
+      - turn: 2
+        input:
+          user_message: "好的我知道了。我现在又建了一个糖尿病预测模型，AUC=0.85！"
+
+        expected_output:
+          error_detected: true
+          error_type: "validation_missing"
+          recurring: true  # 第2次同样错误
+          recurring_count: 2
+          response_mode: "deep_mentorship"  # 升级模式
+
+          must_include:
+            - "⚠️ 这是您第2次在validation上遇到问题"
+            - "深度概念框架（为什么validation如此重要）"
+            - "Overfitting机制解释"
+            - "具体validation方法（CV, external等）"
+            - "练习题或思考问题"
+
+          quality_benchmarks:
+            recurring_flag_explicit: true
+            deeper_teaching: true
+            concept_framework_provided: true
+
+      - turn: 3_followup
+        time_window: "30天后"
+        input:
+          user_message: "我的新模型在external validation dataset上测试了，AUC从0.80降到了0.75。"
+
+        expected_tracking:
+          recurring_error_status: "eliminated"  # 成功纠正
+          learning_demonstrated: true
+
+  - case_id: "RE_002"
+    scenario_type: "recurring_multiple_testing"
+    user_id: "test_user_recurring_002"
+
+    turns:
+      - turn: 1
+        input:
+          user_message: "我做了5个亚组分析，有2个p<0.05。"
+
+        expected_output:
+          error_detected: true
+          error_type: "multiple_testing_no_correction"
+          response_mode: "critic"
+
+      - turn: 2
+        input:
+          user_message: "我又做了8个sensitivity analyses，其中4个显著。"
+
+        expected_output:
+          recurring: true
+          recurring_count: 2
+          response_mode: "deep_mentorship"
+
+          must_include:
+            - "重复错误标记"
+            - "多重比较的深度教学"
+            - "为什么Type I error会增加"
+            - "校正方法对比（Bonferroni vs FDR）"
+
+  # ... 更多recurring_error案例（共3个）
+
+# ============================================================================
+# Usage Instructions - 使用说明
+# ============================================================================
+
+usage:
+  testing_procedure: |
+    1. 读取测试案例
+    2. 将 input.user_message 输入ACS-Mentor系统
+    3. 记录系统输出：
+       - error_detected?
+       - error_type
+       - routed_mode
+       - guidance_response
+       - quality_score
+
+    4. 与 expected_output 对比：
+       - Error detection: 是否检测到错误？类型是否正确？
+       - Routing: mode是否正确？complexity评分是否在预期范围？
+       - Quality: 是否包含must_include的要点？
+
+    5. 计算metrics:
+       - Precision, Recall, F1 for error detection
+       - Routing accuracy
+       - Quality score correlation
+
+  evaluation_script: |
+    # 伪代码示例
+    def evaluate_on_benchmarks():
+        results = {
+            'methodological_errors': [],
+            'novice_questions': [],
+            'strategic_scenarios': [],
+            'recurring_errors': []
+        }
+
+        for dataset_name, cases in benchmark_datasets.items():
+            for case in cases:
+                # 运行系统
+                system_output = run_acs_mentor(case.input)
+
+                # 评估
+                evaluation = compare_output(
+                    system_output,
+                    case.expected_output
+                )
+
+                results[dataset_name].append(evaluation)
+
+        # 计算总体metrics
+        overall_metrics = calculate_metrics(results)
+
+        return overall_metrics
+
+  metrics_calculation: |
+    Error Detection Rate = Correctly Detected / Total Actual Errors
+
+    Routing Accuracy = Correctly Routed / Total Cases
+
+    Quality Match = Cases where must_include points are present / Total
+
+    Recurring Error Elimination = Eliminated in turn_3 / Total recurring scenarios
+
+# ============================================================================
+# Expected Baseline Performance - 预期基线性能
+# ============================================================================
+
+baseline_targets:
+  methodological_errors:
+    error_detection_rate: "> 0.90"
+    guidance_quality: "> 0.80"
+
+  novice_questions:
+    routing_accuracy: "> 0.85"
+    response_appropriateness: "> 0.80"
+
+  strategic_scenarios:
+    strategic_depth_score: "> 0.75"
+    actionability: "> 0.80"
+
+  recurring_errors:
+    recurring_detection_rate: "1.0"  # 必须100%检测到
+    elimination_rate: "> 0.60"
+
+# ============================================================================
+# Future Extensions
+# ============================================================================
+
+future_extensions:
+  - "扩展到200+ cases covering更多场景"
+  - "添加adversarial cases（故意刁钻的问题）"
+  - "添加multilingual cases（英文+中文）"
+  - "添加multimodal cases（包含图表、代码等）"
+  - "构建dynamic benchmark（随时间更新）"

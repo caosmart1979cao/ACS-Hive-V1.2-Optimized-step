@@ -1,0 +1,579 @@
+# Memory System Configuration - ACS-Mentor V2.1
+# 混合内存架构：语义向量搜索 + SQLite持久化
+# 启发来源：Claude-Flow v2.7.0 混合内存系统
+
+# ============================================================================
+# Architecture Overview - 架构总览
+# ============================================================================
+
+architecture_philosophy: |
+  混合双系统设计，平衡性能与可靠性：
+  - Primary: 语义向量数据库 (ChromaDB) - 高性能相似度搜索
+  - Fallback: SQLite关系数据库 - 可靠持久化存储
+  - Auto-degradation: 主系统故障时自动降级到备选系统
+
+version: "2.1.0"
+design_date: "2025-11-16"
+
+# ============================================================================
+# Primary Store: Semantic Vector Database (ChromaDB)
+# ============================================================================
+
+primary_store:
+  type: "semantic_vector_database"
+  implementation: "chromadb"
+
+  config:
+    persist_directory: ".acs_mentor/vector_db"
+    embedding_model: "all-MiniLM-L6-v2"  # 轻量级，384维，本地运行
+    embedding_dim: 384
+    distance_metric: "cosine"  # 余弦相似度
+
+  collections:
+    # Collection 1: 用户历史交互
+    user_interactions:
+      description: "存储所有用户对话历史，用于检索相似案例"
+      metadata_schema:
+        - session_id: "string"
+        - timestamp: "datetime"
+        - user_level: "enum[novice, intermediate, advanced]"
+        - topic_category: "enum[study_design, statistics, writing, strategy]"
+        - mode_used: "enum[critic, mentor, hybrid]"
+        - user_satisfaction: "float[0-1]"  # 隐式或显式反馈
+
+      indexing_strategy:
+        chunk_size: 512  # tokens
+        overlap: 50      # token overlap between chunks
+
+      retention_policy:
+        max_age_days: 365
+        max_entries: 10000
+        cleanup_strategy: "remove_lowest_satisfaction_first"
+
+    # Collection 2: 成功指导案例库
+    guidance_cases:
+      description: "高质量指导案例，作为最佳实践模板"
+      metadata_schema:
+        - case_id: "string"
+        - problem_type: "string"
+        - user_level: "string"
+        - guidance_strategy: "string"
+        - effectiveness_score: "float[0-1]"
+        - tags: "list[string]"
+
+      quality_threshold: 0.80  # 只有satisfaction >= 0.8的案例才会存入
+
+      curation:
+        auto_add: true
+        manual_review: false  # V2.1暂不启用人工审核
+        max_entries: 500
+
+    # Collection 3: 错误模式库
+    error_patterns:
+      description: "用户常见错误及对应纠正策略"
+      metadata_schema:
+        - error_type: "string"
+        - error_severity: "enum[critical, moderate, minor]"
+        - correction_strategy: "string"
+        - recurrence_count: "int"
+        - last_occurrence: "datetime"
+
+      deduplication:
+        similarity_threshold: 0.90  # 相似度>0.9视为同一错误
+        merge_strategy: "increment_recurrence_count"
+
+  performance_targets:
+    query_latency_p95: "100ms"  # 95%查询在100ms内完成
+    index_build_time: "5s"      # 初始索引构建时间
+    memory_footprint: "500MB"   # 内存占用上限
+
+# ============================================================================
+# Fallback Store: SQLite Relational Database
+# ============================================================================
+
+fallback_store:
+  type: "sqlite"
+  database_path: ".acs_mentor/memory.db"
+
+  tables:
+    # Table 1: 用户能力画像
+    user_profiles:
+      schema: |
+        CREATE TABLE IF NOT EXISTS user_profiles (
+          user_id TEXT PRIMARY KEY,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+          -- 能力水平评估
+          overall_level TEXT CHECK(overall_level IN ('novice', 'intermediate', 'advanced')),
+
+          -- 技能领域评分 (0.0-1.0)
+          skill_study_design REAL DEFAULT 0.0,
+          skill_statistics REAL DEFAULT 0.0,
+          skill_writing REAL DEFAULT 0.0,
+          skill_critical_appraisal REAL DEFAULT 0.0,
+
+          -- 交互统计
+          total_interactions INTEGER DEFAULT 0,
+          total_errors_detected INTEGER DEFAULT 0,
+          total_guidance_received INTEGER DEFAULT 0,
+
+          -- 学习轨迹
+          current_learning_focus TEXT,
+          skill_tree_progress TEXT,  -- JSON format
+
+          -- 偏好设置
+          preferred_mode TEXT DEFAULT 'balanced',
+          response_depth_preference TEXT DEFAULT 'standard'
+        );
+
+      indexes:
+        - "CREATE INDEX idx_user_level ON user_profiles(overall_level);"
+        - "CREATE INDEX idx_updated ON user_profiles(updated_at);"
+
+    # Table 2: 会话历史
+    session_history:
+      schema: |
+        CREATE TABLE IF NOT EXISTS session_history (
+          session_id TEXT PRIMARY KEY,
+          user_id TEXT,
+          start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          end_time TIMESTAMP,
+
+          -- 会话元数据
+          session_type TEXT,  -- research_review, writing_guidance, strategic_planning
+          primary_topic TEXT,
+          mode_used TEXT,
+
+          -- 会话统计
+          total_turns INTEGER DEFAULT 0,
+          errors_detected INTEGER DEFAULT 0,
+          guidance_provided INTEGER DEFAULT 0,
+
+          -- 会话评估
+          complexity_score REAL,
+          user_satisfaction REAL,
+
+          FOREIGN KEY (user_id) REFERENCES user_profiles(user_id)
+        );
+
+      indexes:
+        - "CREATE INDEX idx_session_user ON session_history(user_id);"
+        - "CREATE INDEX idx_session_time ON session_history(start_time);"
+
+    # Table 3: 技能进展追踪
+    skill_progress:
+      schema: |
+        CREATE TABLE IF NOT EXISTS skill_progress (
+          progress_id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id TEXT,
+          skill_domain TEXT,  -- study_design, statistics, writing, etc.
+          skill_name TEXT,
+
+          -- 进展记录
+          previous_level TEXT,
+          current_level TEXT,
+          advancement_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+          -- 晋级证据
+          mastery_evidence TEXT,  -- 描述达成mastery_criteria的具体表现
+
+          FOREIGN KEY (user_id) REFERENCES user_profiles(user_id)
+        );
+
+      indexes:
+        - "CREATE INDEX idx_skill_user ON skill_progress(user_id);"
+        - "CREATE INDEX idx_skill_domain ON skill_progress(skill_domain);"
+
+    # Table 4: 错误追踪日志
+    error_tracking:
+      schema: |
+        CREATE TABLE IF NOT EXISTS error_tracking (
+          error_id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id TEXT,
+          session_id TEXT,
+          detected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+          -- 错误详情
+          error_type TEXT,
+          error_category TEXT,  -- statistical, methodological, reporting, interpretation
+          error_severity TEXT CHECK(error_severity IN ('critical', 'moderate', 'minor')),
+          error_description TEXT,
+
+          -- 纠正记录
+          correction_provided TEXT,
+          user_acknowledged BOOLEAN DEFAULT 0,
+          recurrence_flag BOOLEAN DEFAULT 0,
+
+          FOREIGN KEY (user_id) REFERENCES user_profiles(user_id),
+          FOREIGN KEY (session_id) REFERENCES session_history(session_id)
+        );
+
+      indexes:
+        - "CREATE INDEX idx_error_user ON error_tracking(user_id);"
+        - "CREATE INDEX idx_error_type ON error_tracking(error_type);"
+        - "CREATE INDEX idx_error_time ON error_tracking(detected_at);"
+
+  initialization_sql: |
+    -- 启用外键约束
+    PRAGMA foreign_keys = ON;
+
+    -- 创建触发器：自动更新user_profiles的updated_at
+    CREATE TRIGGER IF NOT EXISTS update_user_profile_timestamp
+    AFTER UPDATE ON user_profiles
+    FOR EACH ROW
+    BEGIN
+      UPDATE user_profiles SET updated_at = CURRENT_TIMESTAMP WHERE user_id = NEW.user_id;
+    END;
+
+# ============================================================================
+# Retrieval Strategies - 检索策略
+# ============================================================================
+
+retrieval_strategies:
+
+  # 策略1: 语义相似度搜索
+  semantic_search:
+    description: "基于语义相似度检索历史案例"
+    use_cases:
+      - "用户提出新问题时，查找类似历史案例"
+      - "寻找最佳实践指导模板"
+      - "发现潜在的成长机会"
+
+    implementation:
+      primary_collection: "guidance_cases"
+      fallback_collection: "user_interactions"
+
+      query_processing:
+        - step: "extract_key_concepts"
+          method: "NER + keyword extraction"
+        - step: "generate_embedding"
+          model: "all-MiniLM-L6-v2"
+        - step: "vector_search"
+          distance_metric: "cosine"
+
+      parameters:
+        top_k: 5
+        similarity_threshold: 0.70  # 相似度 >= 0.7才返回
+        max_age_days: 180           # 只检索最近6个月的案例
+
+      metadata_filters:
+        - filter_by_user_level: true     # 优先匹配相同能力水平的案例
+        - filter_by_topic: true          # 优先匹配相同主题
+        - boost_high_satisfaction: true  # 高满意度案例权重+20%
+
+      result_ranking:
+        formula: |
+          final_score = 0.6 * semantic_similarity
+                      + 0.2 * user_level_match
+                      + 0.15 * recency_score
+                      + 0.05 * satisfaction_score
+
+  # 策略2: 精确模式匹配
+  exact_pattern_match:
+    description: "检测重复出现的错误模式"
+    use_cases:
+      - "识别用户的重复性错误"
+      - "触发深度指导 (当同一错误出现≥2次)"
+
+    implementation:
+      data_source: "error_tracking table"
+
+      matching_logic: |
+        SELECT error_type, COUNT(*) as occurrence_count,
+               MAX(detected_at) as last_occurrence
+        FROM error_tracking
+        WHERE user_id = :user_id
+          AND detected_at >= date('now', '-30 days')
+        GROUP BY error_type
+        HAVING occurrence_count >= 2
+        ORDER BY occurrence_count DESC;
+
+      trigger_conditions:
+        recurrence_threshold: 2
+        lookback_window_days: 30
+
+      actions:
+        - "标记为recurring_error"
+        - "升级guidance模式为deep_mentorship"
+        - "触发skill_gap诊断"
+
+  # 策略3: 时间序列分析
+  temporal_pattern_analysis:
+    description: "分析用户能力随时间的变化趋势"
+    use_cases:
+      - "评估学习进展速度"
+      - "预测下一个学习里程碑"
+      - "识别学习停滞期"
+
+    implementation:
+      data_source: "skill_progress table + session_history"
+
+      analysis_window: "90 days"
+
+      metrics:
+        - metric: "skill_growth_rate"
+          formula: "Δskill_score / Δtime"
+
+        - metric: "interaction_frequency"
+          formula: "COUNT(sessions) / time_window"
+
+        - metric: "error_rate_trend"
+          formula: "errors_detected / total_interactions (moving average)"
+
+      insights:
+        positive_signals:
+          - "skill_growth_rate > 0.1 per month"
+          - "error_rate_trend is decreasing"
+          - "advancing to higher skill levels"
+
+        warning_signals:
+          - "no skill advancement in 60 days"
+          - "error_rate_trend is increasing"
+          - "interaction_frequency dropped by >50%"
+
+  # 策略4: 上下文增强检索
+  context_enrichment:
+    description: "Pre-guidance阶段的上下文增强"
+    use_cases:
+      - "准备响应前加载相关历史"
+      - "识别用户当前学习阶段"
+      - "预测用户可能的困惑点"
+
+    implementation:
+      stages:
+        - stage: "load_user_profile"
+          action: "从user_profiles加载能力画像"
+
+        - stage: "retrieve_recent_interactions"
+          action: "从user_interactions检索最近5次对话"
+          parameters:
+            top_k: 5
+            time_window: "7 days"
+
+        - stage: "identify_learning_focus"
+          action: "从skill_progress识别当前学习重点"
+
+        - stage: "check_error_patterns"
+          action: "从error_tracking检查是否有重复错误"
+
+        - stage: "semantic_search_similar_cases"
+          action: "从guidance_cases检索相似成功案例"
+          parameters:
+            top_k: 3
+            threshold: 0.75
+
+      output_format: |
+        {
+          "user_profile": {...},
+          "recent_history": [...],
+          "current_focus": "...",
+          "recurring_errors": [...],
+          "similar_success_cases": [...]
+        }
+
+# ============================================================================
+# Auto-Degradation & Fault Tolerance - 自动降级与容错
+# ============================================================================
+
+fault_tolerance:
+
+  degradation_strategy:
+    # Primary失败时的降级路径
+    if_chromadb_unavailable:
+      fallback_to: "sqlite_exact_match"
+      degradation_level: "moderate"  # 失去语义搜索，但保留精确匹配
+      user_impact: "检索相关案例的能力下降，但核心功能正常"
+
+    if_sqlite_unavailable:
+      fallback_to: "in_memory_session_only"
+      degradation_level: "severe"  # 无持久化，仅当前会话有效
+      user_impact: "无法跨会话学习，但当前对话不受影响"
+
+    if_both_unavailable:
+      fallback_to: "stateless_mode"
+      degradation_level: "critical"  # 降级为V2.0无内存模式
+      user_impact: "系统退化为V2.0状态，无学习能力"
+
+  health_checks:
+    chromadb_health:
+      check_interval: "60s"
+      timeout: "5s"
+      test_query: "ping collection"
+
+    sqlite_health:
+      check_interval: "30s"
+      timeout: "2s"
+      test_query: "SELECT 1;"
+
+  recovery_procedures:
+    auto_recovery: true
+    max_retry_attempts: 3
+    retry_backoff: "exponential"  # 2s, 4s, 8s
+
+    if_persistent_failure:
+      action: "log_error_and_continue_degraded"
+      alert: false  # V2.1暂不启用告警
+
+# ============================================================================
+# Data Privacy & Security - 数据隐私与安全
+# ============================================================================
+
+privacy_settings:
+
+  data_retention:
+    user_interactions: "365 days"
+    error_tracking: "180 days"
+    session_history: "365 days"
+
+  anonymization:
+    enabled: false  # V2.1单用户场景暂不需要
+
+  data_export:
+    format: "JSON"
+    included_tables:
+      - "user_profiles"
+      - "skill_progress"
+      - "session_history"
+
+  data_deletion:
+    user_requested_deletion: "complete_removal"
+    cascade_delete: true
+
+# ============================================================================
+# Performance Optimization - 性能优化
+# ============================================================================
+
+optimization_settings:
+
+  caching:
+    user_profile_cache:
+      enabled: true
+      ttl: "300s"  # 5分钟缓存
+
+    embedding_cache:
+      enabled: true
+      max_size: 1000  # 缓存最近1000个查询的embeddings
+
+  batch_operations:
+    batch_insert_size: 100
+    batch_update_interval: "5s"
+
+  indexing:
+    auto_rebuild_threshold: 1000  # 新增1000条记录后重建索引
+    incremental_index: true
+
+# ============================================================================
+# Migration Plan - 从V2.0迁移
+# ============================================================================
+
+migration_from_v2:
+
+  # V2.0中的user_capability_profile迁移到SQLite user_profiles
+  user_profile_migration:
+    source: "mentorship_goals.yaml::user_capability_profile"
+    destination: "sqlite::user_profiles"
+    mapping:
+      - v2_field: "user_level"
+        v2_1_field: "overall_level"
+
+      - v2_field: "skill_scores"
+        v2_1_field: "skill_* columns"
+        transform: "extract individual skill scores"
+
+      - v2_field: "learning_trajectory"
+        v2_1_field: "skill_tree_progress"
+        transform: "JSON serialize"
+
+  # V2.0的error_tracking迁移
+  error_tracking_migration:
+    source: "mentorship_goals.yaml::error_tracking"
+    destination: "sqlite::error_tracking + chromadb::error_patterns"
+
+    migration_steps:
+      - step: "提取所有历史错误记录"
+      - step: "插入到error_tracking表"
+      - step: "生成embeddings并存入error_patterns collection"
+      - step: "建立关联索引"
+
+# ============================================================================
+# Usage Examples - 使用示例
+# ============================================================================
+
+usage_examples:
+
+  example_1_semantic_search:
+    scenario: "用户询问：'RCT和观察性研究该如何选择？'"
+    workflow: |
+      1. 生成查询embedding
+      2. 在guidance_cases中搜索相似案例（top_k=5, threshold=0.7）
+      3. 过滤：user_level=novice, topic=study_design
+      4. 返回最相关的3个历史成功指导案例
+      5. 使用这些案例作为模板生成新响应
+
+  example_2_recurrent_error:
+    scenario: "用户第2次犯'多重比较未校正'错误"
+    workflow: |
+      1. 检测到error_type='multiple_comparison_no_correction'
+      2. 查询error_tracking表，发现occurrence_count=2
+      3. 触发recurring_error标记
+      4. 从guidance_cases检索针对此错误的深度教学案例
+      5. 切换到deep_mentorship模式
+      6. 提供concept framework + 多个例子 + 练习题
+
+  example_3_progress_tracking:
+    scenario: "用户连续3次正确应用倾向性评分"
+    workflow: |
+      1. 检测到用户在'statistical_methods::propensity_score'上的表现
+      2. 更新skill_progress表，标记为'intermediate'
+      3. 在下次对话时，context_enrichment会加载这个进展
+      4. 系统自动调整响应深度（从基础解释 → 高级应用）
+      5. 可能触发milestone_celebration
+
+# ============================================================================
+# Monitoring & Metrics - 监控与指标
+# ============================================================================
+
+monitoring:
+
+  key_metrics:
+    - metric: "retrieval_precision"
+      definition: "检索到的案例中真正相关的比例"
+      target: "> 0.80"
+
+    - metric: "retrieval_latency_p95"
+      definition: "95%查询的延迟时间"
+      target: "< 100ms"
+
+    - metric: "memory_growth_rate"
+      definition: "数据库大小增长速度"
+      target: "< 10MB/week"
+
+    - metric: "cache_hit_rate"
+      definition: "缓存命中率"
+      target: "> 0.60"
+
+  logging:
+    log_level: "INFO"
+    log_queries: true
+    log_slow_queries_threshold: "200ms"
+
+  analytics:
+    track_query_patterns: true
+    track_user_growth: true
+    generate_weekly_report: false  # V2.1暂不启用
+
+# ============================================================================
+# Future Enhancements - 未来增强（V2.5+）
+# ============================================================================
+
+future_roadmap:
+  v2_5:
+    - "Neural pattern learning：从成功案例自动学习最佳策略"
+    - "Multi-user support：多用户隔离与协作"
+    - "External knowledge integration：连接PubMed等外部知识源"
+
+  v3_0:
+    - "Distributed memory：支持分布式部署"
+    - "Real-time collaboration：实时协作功能"
+    - "Advanced analytics dashboard：可视化分析面板"
