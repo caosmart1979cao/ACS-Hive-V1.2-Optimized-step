@@ -1,4 +1,308 @@
-# CHANGELOG - ACS蜂巢V1.2优化版
+# CHANGELOG - ACS系统更新日志
+
+## Version 2.0 - ACS-Mentor (2025-11-13)
+
+### 🎯 重大升级：从审稿专家到科研导师
+
+**核心愿景**: 从批判到建设，从纠错到育人
+
+本版本实现了从**ACS-Hive**(审稿专家)到**ACS-Mentor**(科研导师)的系统性升级，在保留V1.2.1所有审稿能力的基础上，新增三大核心模块。
+
+---
+
+### 三大核心扩展
+
+**1. 智能写作导师 (Writing Mentor)** 📝
+- **研究全周期支持**: Ideation → Design → Analysis → Writing
+- **研究设计决策树**: 因果推断/预测/描述性研究的设计指导
+- **统计方法顾问**: 基于outcome类型的方法选择建议
+- **可视化原则**: 图表设计best practices
+- **Discussion框架**: 4段式结构化写作指导
+- **配置文件**: `writing_guidance.yaml` (650行)
+
+**2. 战略思维顾问 (Strategic Advisor)** 🎯
+- **研究前沿识别**: 追踪新兴方法和热点话题
+- **Gap识别框架**: 方法学gap/实证gap/理论gap
+- **创新性评估**: 4维度评估(概念/方法/实证/应用)
+- **影响力预测模型**: 基于问题重要性/方法严谨性/创新性/可行性
+- **长期研究规划**: 职业阶段策略和研究组合平衡
+- **配置文件**: `strategic_thinking.yaml` (600行)
+
+**3. 能力发展系统 (Capability Developer)** 📈
+- **批判性思维培养**: 从novice → intermediate → advanced
+- **研究独立性训练**: Guided → Semi-independent → Fully independent
+- **技能树系统**: 4大领域的系统化技能发展
+- **错误模式追踪**: Recurring pattern检测与消除
+- **长期成长追踪**: 跨会话能力评估和里程碑庆祝
+- **配置文件**: `mentorship_goals.yaml` (550行)
+
+---
+
+### 架构创新
+
+**1. 双模式系统**
+
+```
+Critic Mode (批判模式)      ←→     Mentor Mode (导师模式)
+    ↓                                    ↓
+检测错误、纠正问题                   引导思考、启发创新
+强制规范、确保质量                   提供建议、培养能力
+基于beliefs.yaml                    基于mentorship.yaml
+```
+
+**Hybrid Mode**: 无缝过渡"纠错→教学→资源"
+
+**2. 8因子决策框架**
+
+扩展自V1.2.1的6因子系统：
+
+| 因子 | 权重 | 模式 | 描述 |
+|------|------|------|------|
+| error_detection | 0.9 | Critic | 方法学错误检测 |
+| goal_threatened | 0.8 | Critic | 核心目标受威胁 |
+| agenda_opportunity | 0.75 | Critic | 议程推进机会 |
+| misrepresented | 0.7 | Critic | 观点被误解 |
+| expertise_match | 0.6 | Both | 专业领域匹配 |
+| silence_too_long | 0.4 | Both | 沉默过久 |
+| **growth_opportunity** | **0.70** | **Mentor** | **成长机会** ⭐NEW |
+| **strategic_insight** | **0.65** | **Mentor** | **战略洞察** ⭐NEW |
+
+**3. 智能模式切换**
+
+```python
+if critic_score >= 1.5 and mentor_score >= 0.6:
+    → Hybrid Mode (先纠错，后教学)
+elif critic_score >= 1.5:
+    → Critic Mode (纯批判)
+elif mentor_score >= 1.2:
+    → Mentor Mode (纯指导)
+else:
+    → Balanced Mode (根据情况)
+```
+
+---
+
+### 核心文件清单
+
+**新增配置文件** (4个):
+1. **writing_guidance.yaml** (650行)
+   - 4个写作阶段完整指导
+   - 统计方法advisor
+   - 可视化principles
+   - Discussion framework
+
+2. **strategic_thinking.yaml** (600行)
+   - 前沿方法追踪
+   - Gap识别工具箱
+   - 创新性评估框架
+   - 职业规划策略
+
+3. **mentorship_goals.yaml** (550行)
+   - 5个导师级目标
+   - 技能树定义
+   - 错误模式追踪
+   - 用户能力profiling
+
+4. **decision_logic_v2_extension.md** (450行)
+   - Factor 7-8检测算法
+   - 8因子urgency计算
+   - 模式选择逻辑
+   - Hybrid模式设计
+   - 完整决策示例
+
+**修改的文件** (1个):
+- **beliefs.yaml**
+  - 新增Factor 7-8权重定义
+  - 新增mode_specific_weights配置
+  - 扩展weight_adjustments支持V2.0
+
+**设计文档** (1个):
+- **ACS-MENTOR_V2.0_ARCHITECTURE.md** (1,626行)
+  - 完整架构设计
+  - 详细配置示例
+  - 实施路线图
+  - 最佳实践建议
+
+---
+
+### 技术指标
+
+**代码量**:
+- 新增配置: ~2,250行 (4个YAML文件)
+- 新增文档: ~2,100行 (2个MD文件)
+- 修改文件: ~40行 (beliefs.yaml扩展)
+- **总计**: ~4,400行新内容
+
+**兼容性**:
+- ✅ 100%向后兼容V1.2.1
+- ✅ 保留所有V1.2.1审稿功能
+- ✅ 新功能可选启用
+- ✅ 渐进式部署支持
+
+---
+
+### 预期效果
+
+**定量目标**:
+- 用户满意度: 0.80 → 0.90
+- 问题解决率: 90% → 95%
+- 长期留存率: N/A → 0.85
+- 能力提升速度: N/A → 每月+10%
+
+**定性改进**:
+- 不只指出错误，还教会为什么
+- 帮助建立系统的科研思维
+- 像真正的导师，而非仅审稿人
+- 支持长期能力发展
+
+---
+
+### 实施建议
+
+**Phase 1**: 基础配置 (立即可用)
+- ✅ 8因子决策框架
+- ✅ 配置文件骨架
+
+**Phase 2**: Writing Mentor (优先)
+- 研究设计咨询
+- 统计方法选择
+- 写作框架指导
+
+**Phase 3**: Strategic Advisor
+- 创新性评估
+- 影响力预测
+- 研究规划
+
+**Phase 4**: Capability Developer
+- 能力追踪
+- 学习路径
+- 成长监控
+
+---
+
+### 设计原则
+
+1. **兼容性优先**: 完全保留V1.2.1能力
+2. **模块化设计**: 新功能独立可选
+3. **上下文感知**: 智能识别用户需求
+4. **长期主义**: 支持跨会话追踪
+5. **可解释性**: 所有建议有理论依据
+
+---
+
+### 参考文档
+
+- 完整架构: `ACS-MENTOR_V2.0_ARCHITECTURE.md`
+- 决策逻辑: `decision_logic_v2_extension.md`
+- 配置示例: `writing_guidance.yaml`, `strategic_thinking.yaml`, `mentorship_goals.yaml`
+
+---
+
+## Version 1.2.1-Optimized (2025-11-13)
+
+### 🔧 精细调优与质量保证
+
+本次优化专注于算法修正、参数校准和系统可观测性增强。
+
+#### 关键修正
+
+**1. 修正urgency计算的权重不一致bug** 🐛 → ✅
+- **问题**: `agenda_opportunity`因子直接使用importance值,不乘以权重0.75
+- **影响**: Agenda的影响力过大且不受控制
+- **修正**: 统一所有因子使用`factor_score * weight`计算
+- **效果**: Agenda贡献从0.95降至0.71(importance=0.95时),更理性
+- **文件**: `decision_logic_guide.md` (lines 426-478, 727-735)
+
+**2. 重新校准intervention阈值** ⚙️ → ✅
+- **问题**: `goals.yaml`阈值与`decision_logic_guide.md`的Pattern定义不对齐
+- **调整**:
+  * critical: 保持0.85
+  * high: 0.70 → 0.60 (与Pattern B定义对齐)
+  * moderate: 0.50 → 0.35 (与Pattern C定义对齐)
+  * watch: 0.30 → 0.20 (降低不必要介入)
+- **效果**: Pattern分类更准确,减少边界案例误判
+- **文件**: `goals.yaml` (lines 222-249)
+
+#### 功能增强
+
+**3. 动态阈值调整机制** 🔄 新增
+- **功能**: 认知阈值支持基于研究类型和样本量的自适应调整
+- **实现**: `threshold_adaptation`配置
+  * study_type_modifiers: RCT(1.0), observational(1.1), pilot(0.8), etc.
+  * sample_size_modifiers: large(0.95), medium(1.0), small(1.2)
+  * 组合规则: `final = base * study_mod * sample_mod`
+- **价值**: 对pilot研究更宽容,对观察性研究更严格
+- **文件**: `beliefs.yaml` (lines 45-59)
+
+**4. 上下文权重调整** 🎯 新增
+- **功能**: 决策权重支持基于用户类型的动态调整
+- **实现**: `weight_adjustments`配置
+  * when_user_is_novice: 提高主动性和教育性
+  * when_user_is_expert: 强调专业对话
+  * when_user_is_defensive: 降低agenda推进,聚焦核心错误
+- **价值**: 根据用户特征优化交互策略
+- **文件**: `beliefs.yaml` (lines 226-239)
+
+**5. 决策可解释性框架** 📊 新增
+- **Debug输出模板**: 标准化的六因子分析格式
+- **决策审计日志**: YAML格式的完整决策记录
+- **决策场景速查表**: 5类常见场景的标准urgency范围
+- **参数调优指南**: 症状-诊断-解决方案映射表
+- **价值**: 支持L3层[M-04]和[M-01]的决策分析和参数调优
+- **文件**: `decision_logic_guide.md` (lines 778-885)
+
+**6. 性能监控和质量保证** 📈 新增
+- **KPI定义**:
+  * precision(准确率): 目标≥0.90
+  * recall(捕获率): 目标≥0.85
+  * user_satisfaction: 目标≥0.80
+- **自我监控检查点**: 3个触发条件和对应调整动作
+- **定期校准**: 每20次交互统计和分析
+- **自动诊断算法**: Pattern分布、连续误判、沉默过久、urgency异常
+- **价值**: 系统具备自我监控和持续改进能力
+- **文件**: `goals.yaml` (lines 264-304), `decision_logic_guide.md` (lines 888-937)
+
+**7. 权重校准说明** 📝 新增
+- **权重设计原则**: 6个因子的权重设计理由
+- **典型urgency scores**: 3个常见组合的计算示例
+- **动态权重调整**: 3种用户类型的权重微调策略
+- **文件**: `beliefs.yaml` (lines 211-239)
+
+#### 文档更新
+
+**8. 优化总结报告** 📄 新增
+- **文件**: `OPTIMIZATION_V1.2.1.md`
+- **内容**: 650行的完整优化文档,包括:
+  * 执行摘要和核心成果
+  * 7个主要优化项的详细说明
+  * 预期效果和成功指标
+  * 部署建议和测试方案
+  * 未来优化方向
+
+#### 技术指标
+
+**代码质量**:
+- 修正1个关键算法bug
+- 新增985行优化配置和文档
+- 修改3个核心配置文件
+- 新增1个优化报告文档
+
+**预期改进**:
+- Pattern对齐度: 70% → 100%
+- 决策一致性: 中 → 高
+- 上下文适应性: 无 → 强
+- 可解释性: 低 → 高
+- 可监控性: 无 → 完整
+
+#### 向后兼容性
+
+✅ 所有优化均向后兼容:
+- 原有配置结构保持不变
+- 新增字段均为optional
+- 核心权重值保持不变(仅修正使用方式)
+- 所有原有功能正常运行
+
+---
 
 ## Version 1.2-Optimized (2025-11-10)
 

@@ -1,0 +1,755 @@
+# Strategic Thinking - 战略思维顾问知识库
+# ACS-Mentor V2.0 Core Module
+# 高屋建瓴的科研视野与长期规划
+
+# ============================================================================
+# Research Frontiers - 研究前沿识别
+# ============================================================================
+
+research_frontiers:
+
+  description: "识别和评估研究前沿趋势"
+
+  # 新兴方法追踪
+  emerging_methods:
+
+    - name: "Causal Machine Learning"
+      keywords: ["double ML", "causal forest", "targeted learning", "TMLE"]
+      maturity: "early_adoption"
+      impact_potential: 0.95
+      learning_curve: "steep"
+
+      description: |
+        结合机器学习的灵活性与因果推断的严谨性
+
+      key_papers:
+        - "Chernozhukov et al. Double/debiased machine learning. Econometrics 2018"
+        - "Wager & Athey. Estimation of heterogeneous treatment effects. JASA 2018"
+
+      适用场景:
+        - "高维混杂控制"
+        - "异质性treatment effect估计"
+        - "Non-linear复杂关系"
+
+      learning_resources:
+        - "EconML library (Microsoft)"
+        - "CausalML library (Uber)"
+
+    - name: "Federated Learning in Healthcare"
+      keywords: ["federated", "privacy-preserving", "distributed learning"]
+      maturity: "emerging"
+      impact_potential: 0.90
+      learning_curve: "steep"
+
+      description: |
+        在保护隐私的前提下，跨机构协作建模
+
+      advantages:
+        - "无需共享raw data"
+        - "更大样本量"
+        - "Generalizability验证"
+
+      challenges:
+        - "技术复杂度"
+        - "机构协调成本"
+        - "Regulatory hurdles"
+
+    - name: "Real-World Evidence (RWE)"
+      keywords: ["RWE", "pragmatic trial", "EHR-based", "observational"]
+      maturity: "mainstream"
+      impact_potential: 0.85
+      learning_curve: "moderate"
+
+      description: |
+        利用真实世界数据回答实际临床问题
+
+      data_sources:
+        - "EHR (电子病历)"
+        - "Claims data (医保数据)"
+        - "Registry (登记注册数据)"
+        - "Wearables (可穿戴设备)"
+
+      regulatory_acceptance:
+        - "FDA: RWE框架 (2018)"
+        - "EMA: 支持RWE用于regulatory decision"
+
+      key_challenges:
+        - "Data quality"
+        - "Selection bias"
+        - "Confounding control"
+
+    - name: "Target Trial Emulation"
+      keywords: ["target trial", "causal roadmap", "observational RCT"]
+      maturity: "growing"
+      impact_potential: 0.88
+      learning_curve: "moderate"
+
+      description: |
+        用观察性数据模拟理想的RCT
+
+      framework:
+        - "明确假想的RCT protocol"
+        - "Eligibility criteria"
+        - "Treatment strategies"
+        - "Assignment procedures"
+        - "Follow-up period"
+        - "Outcomes"
+        - "Causal contrasts"
+
+      reference: "Hernán & Robins. Using Big Data to Emulate a Target Trial. Epidemiology 2016"
+
+  # 热点话题追踪
+  hot_topics:
+
+    - topic: "AI in Clinical Decision Support"
+      peak_years: "2023-2026"
+      saturation_risk: "high"
+      current_gap: "Interpretability & Clinical validation"
+
+      differentiation_strategies:
+        - "Focus on interpretable AI (vs. black-box)"
+        - "Rigorous external validation"
+        - "Clinical utility assessment (decision curve analysis)"
+        - "Implementation science角度"
+
+      caution: |
+        避免：
+        - 纯技术驱动（缺少临床问题）
+        - 只在单中心数据训练
+        - 忽视algorithm bias
+
+    - topic: "Precision Medicine & Biomarkers"
+      peak_years: "2020-2024"
+      saturation_risk: "very_high"
+      current_gap: "Translation to practice"
+
+      differentiation_strategies:
+        - "Focus on understudied populations"
+        - "Novel biomarker discovery (multi-omics)"
+        - "Cost-effectiveness analysis"
+        - "Implementation barriers研究"
+
+      realistic_expectation: |
+        Precision medicine的promise很大,但translation很慢。
+        选择这个方向需要:
+        - Long-term commitment
+        - 跨学科collaboration
+        - Realistic timeline (5-10年)
+
+    - topic: "COVID-19 Long-term Effects"
+      peak_years: "2021-2025"
+      saturation_risk: "medium"
+      current_gap: "Mechanisms & Treatment"
+
+      opportunities:
+        - "长期follow-up数据积累"
+        - "Different variants比较"
+        - "Vaccination impact"
+        - "Therapeutic trials"
+
+    - topic: "Health Equity & Social Determinants"
+      peak_years: "2020-ongoing"
+      saturation_risk: "low"
+      current_gap: "Intervention effectiveness"
+
+      why_important:
+        - "Persistent health disparities"
+        - "Funding priority (NIH, foundations)"
+        - "Policy relevance"
+
+      differentiation_strategies:
+        - "从descriptive → intervention"
+        - "Multilevel analysis"
+        - "Community-engaged research"
+
+# ============================================================================
+# Gap Identification Framework - 研究Gap识别框架
+# ============================================================================
+
+gap_identification:
+
+  types:
+
+    methodological_gap:
+      description: "现有方法的局限性"
+
+      examples:
+        - "外部验证缺失"
+        - "长期outcomes未研究"
+        - "特定人群underrepresented"
+        - "Real-world effectiveness未知"
+
+      detection_questions:
+        - "现有研究用的是什么方法？"
+        - "这些方法有什么局限？"
+        - "有没有更好的方法可以用？"
+        - "新数据源能否填补gap？"
+
+      填补策略:
+        upgrade_method:
+          example: "现有研究用logistic，你用causal ML"
+          value: "更robust的结果"
+
+        external_validation:
+          example: "大量prediction models缺少external validation"
+          value: "提升可信度和generalizability"
+
+        long_term_followup:
+          example: "短期疗效已知，长期unknown"
+          value: "回答clinical relevant question"
+
+    empirical_gap:
+      description: "未被研究的现象或人群"
+
+      examples:
+        - "Understudied populations (minorities, elderly, children)"
+        - "Rare diseases"
+        - "Novel interventions/exposures"
+        - "Emerging outcomes"
+
+      detection_questions:
+        - "哪些人群/干预/结局未被研究？"
+        - "为什么没人研究？(feasibility? interest?)"
+        - "有没有新的数据源可以利用？"
+
+      opportunity_assessment:
+        check_data_availability:
+          - "是否有现成数据？"
+          - "数据质量如何？"
+          - "样本量足够吗？"
+
+        check_significance:
+          - "这个gap重要吗？"
+          - "填补后的impact？"
+
+        check_feasibility:
+          - "研究成本？"
+          - "时间周期？"
+          - "需要的expertise？"
+
+    theoretical_gap:
+      description: "缺少理论解释或机制研究"
+
+      examples:
+        - "已知关联，但机制不清"
+        - "矛盾结果，缺乏reconciliation"
+        - "Empirical发现，无理论框架"
+
+      value_proposition: |
+        机制研究的价值：
+        1. 增强因果可信度
+        2. 指导intervention设计
+        3. 识别高危人群
+        4. 理论贡献
+
+      approaches:
+        - "Mediation analysis"
+        - "Subgroup analysis (effect modification)"
+        - "Biomarker studies"
+        - "Animal/in vitro models (if applicable)"
+
+  # Gap识别工具箱
+  toolkit:
+
+    literature_review_strategy:
+      step_1: "找最新的systematic review/meta-analysis"
+      step_2: "重点读'Limitations'和'Future research'部分"
+      step_3: "制作表格对比现有研究的设计/人群/方法"
+      step_4: "识别pattern：what's consistently missing?"
+
+    expert_consultation:
+      who: "领域资深研究者、临床专家"
+      what_to_ask:
+        - "What questions keep you up at night?"
+        - "What would you do if you had unlimited resources?"
+        - "What are the controversies in the field?"
+
+    data_driven_discovery:
+      approach: "利用现有大型数据库探索未回答的问题"
+      examples:
+        - "UK Biobank: 50万人的rich phenotype data"
+        - "Medicare claims: 覆盖>6000万老年人"
+        - "MIMIC-III: ICU数据"
+
+# ============================================================================
+# Innovation Assessment - 创新性与影响力评估
+# ============================================================================
+
+innovation_assessment:
+
+  # 创新性维度
+  novelty_dimensions:
+
+    - dimension: "Conceptual Novelty (概念创新)"
+      weight: 0.35
+
+      levels:
+        paradigm_shift: 1.0
+        description: "改变领域思维方式"
+        example: "从association到causation的范式转变"
+
+        new_framework: 0.8
+        description: "提出新的理论框架"
+        example: "Life course epidemiology框架"
+
+        novel_hypothesis: 0.6
+        description: "新的研究假设"
+        example: "反直觉的hypothesis"
+
+        new_application: 0.4
+        description: "已有概念的新应用"
+        example: "将A领域概念应用到B领域"
+
+    - dimension: "Methodological Novelty (方法创新)"
+      weight: 0.30
+
+      levels:
+        new_method_development: 1.0
+        description: "开发新统计/分析方法"
+        example: "Double ML方法"
+
+        creative_application: 0.7
+        description: "创造性应用现有方法"
+        example: "Target trial emulation"
+
+        methodological_improvement: 0.5
+        description: "改进现有方法"
+        example: "更robust的IV方法"
+
+        overcome_limitation: 0.6
+        description: "克服previous technical barriers"
+        example: "处理high-dimensional confounding"
+
+    - dimension: "Empirical Novelty (实证创新)"
+      weight: 0.25
+
+      levels:
+        new_population: 0.7
+        description: "在新人群中研究"
+        example: "First study in X population"
+
+        novel_data_source: 0.8
+        description: "利用新数据源"
+        example: "Wearables data, social media data"
+
+        unprecedented_scale: 0.6
+        description: "规模空前"
+        example: "First million-person study"
+
+        long_term_followup: 0.5
+        description: "前所未有的长期follow-up"
+        example: "30-year cohort"
+
+    - dimension: "Clinical/Policy Impact (应用影响)"
+      weight: 0.10
+
+      levels:
+        practice_changing: 1.0
+        description: "改变临床实践"
+        example: "Guideline-influencing"
+
+        inform_policy: 0.8
+        description: "影响政策制定"
+
+        tool_development: 0.6
+        description: "开发实用工具"
+        example: "Risk calculator"
+
+  # 影响力预测模型
+  impact_prediction_model:
+
+    factors:
+
+      - factor: "Problem Importance"
+        weight: 0.30
+
+        indicators:
+          disease_burden:
+            metric: "DALYs, prevalence, mortality"
+            high: ">1M DALYs globally"
+            medium: "100K-1M DALYs"
+            low: "<100K DALYs"
+
+          unmet_need:
+            assessment: "当前治疗的limitations"
+            high: "No effective treatment"
+            medium: "Suboptimal treatment"
+            low: "Adequate treatment available"
+
+          controversy:
+            value: "Controversial topics attract attention"
+            example: "COVID-19, vaccine safety"
+
+      - factor: "Methodological Rigor"
+        weight: 0.25
+
+        indicators:
+          study_design_strength:
+            - "RCT: highest"
+            - "Quasi-experimental: high"
+            - "Well-designed observational: medium"
+
+          sample_size:
+            - "Adequately powered: high"
+            - "Marginally powered: medium"
+            - "Underpowered: low"
+
+          validation_quality:
+            - "External validation: highest"
+            - "Internal validation: medium"
+            - "No validation: low"
+
+      - factor: "Novelty & Innovation"
+        weight: 0.25
+        note: "Use novelty_dimensions scoring above"
+
+      - factor: "Practical Feasibility"
+        weight: 0.20
+
+        indicators:
+          implementation_cost:
+            - "Low-cost intervention: high feasibility"
+            - "Moderate cost: medium"
+            - "High cost/complex: low"
+
+          generalizability:
+            - "Broadly applicable: high"
+            - "Specific settings: medium"
+            - "Limited applicability: low"
+
+          stakeholder_acceptance:
+            - "Aligned with stakeholder interests: high"
+            - "Neutral: medium"
+            - "Resistance expected: low"
+
+    # 评分规则
+    scoring:
+      calculate: |
+        impact_score = (
+          problem_importance * 0.30 +
+          methodological_rigor * 0.25 +
+          novelty_innovation * 0.25 +
+          practical_feasibility * 0.20
+        )
+
+      interpretation:
+        high_impact: ">= 0.75"
+        description: "Likely to be highly cited, practice-changing"
+
+        moderate_impact: "0.50 - 0.75"
+        description: "Solid contribution, incremental advance"
+
+        incremental_impact: "< 0.50"
+        description: "Incremental advance, limited reach"
+
+# ============================================================================
+# Strategic Planning - 长期研究规划
+# ============================================================================
+
+strategic_planning:
+
+  # 职业阶段策略
+  career_stage_strategies:
+
+    early_career:
+      typical_profile: "PhD student, Postdoc, Junior faculty"
+      focus: "建立核心方法学能力 & Track record"
+
+      priorities:
+        - priority: "Master 2-3 core statistical methods"
+          why: "Method expertise is your competitive advantage"
+          how: "Deep dive, not superficial knowledge"
+
+        - priority: "Publish consistently"
+          why: "Build track record for grants"
+          target: "2-3 papers/year"
+
+        - priority: "Develop reproducible workflow"
+          why: "Efficiency & transparency"
+          tools: "Git, R/Python, literate programming"
+
+      project_selection_criteria:
+        clear_contribution:
+          rule: "能说清'我的独特贡献是什么'"
+          avoid: "Me-too研究，过度crowded领域"
+
+        feasible_timeline:
+          rule: "能在1-2年内产出"
+          avoid: "5年才能完成的mega-project"
+
+        collaboration_potential:
+          rule: "有mentorship或collaboration机会"
+          value: "Learn from experienced researchers"
+
+        skill_building:
+          rule: "能学到transferable skills"
+          example: "New method, new data source"
+
+      common_pitfalls:
+        - pitfall: "Chasing hot topics without foundation"
+          consequence: "Superficial work, outcompeted"
+
+        - pitfall: "Too many side projects"
+          consequence: "Nothing完成, scattered effort"
+
+        - pitfall: "Perfectionism"
+          consequence: "Never publish, slow progress"
+
+    mid_career:
+      typical_profile: "Associate Professor, Established researcher"
+      focus: "建立研究品牌 & 扩大影响力"
+
+      priorities:
+        - priority: "Develop signature research line"
+          why: "Known for something specific"
+          how: "Series of related papers, programmatic research"
+
+        - priority: "Lead multi-site collaborations"
+          why: "Larger samples, generalizability"
+          how: "Consortium, network research"
+
+        - priority: "Mentor junior researchers"
+          why: "Multiply your impact"
+          how: "PhD students, postdocs"
+
+        - priority: "Secure sustained funding"
+          why: "Independence, resources"
+          target: "R01-level or equivalent"
+
+      project_selection_criteria:
+        programmatic_coherence:
+          rule: "Projects build on each other"
+          benefit: "Cumulative expertise, brand building"
+
+        high_impact_potential:
+          rule: "Worth the effort investment"
+          criterion: "Likely top-tier journal, practice-changing"
+
+        resource_availability:
+          rule: "Have funding & infrastructure"
+          avoid: "Unfunded moonshot projects"
+
+    established:
+      typical_profile: "Full Professor, Leader"
+      focus: "推动领域发展 & 知识转化"
+
+      priorities:
+        - priority: "Methodological innovation"
+          why: "Shape how research is done"
+          example: "Develop new methods, guidelines"
+
+        - priority: "Guideline development"
+          why: "Direct translation to practice"
+          example: "Clinical practice guidelines"
+
+        - priority: "Knowledge synthesis"
+          why: "See the big picture"
+          example: "Authoritative reviews, textbooks"
+
+        - priority: "Train next generation"
+          why: "Legacy"
+          how: "PhD programs, workshops, online courses"
+
+  # 研究组合平衡
+  research_portfolio_balance:
+
+    rationale: |
+      不要把鸡蛋放在一个篮子里。
+      平衡风险、时间周期、合作模式。
+
+    dimensions:
+
+      risk_profile:
+        safe_projects: 0.50
+        description: "稳妥出成果的项目"
+        example: "Extension of previous work, established methods"
+        purpose: "Maintain productivity, funding"
+
+        moderate_risk: 0.30
+        description: "有一定创新但风险可控"
+        example: "Novel application of known method"
+        purpose: "Incremental innovation"
+
+        high_risk_high_reward: 0.20
+        description: "创新性强但成功不确定"
+        example: "Method development, paradigm shift"
+        purpose: "Breakthrough potential"
+
+      time_horizon:
+        short_term: 0.40
+        definition: "<1年出成果"
+        example: "Secondary data analysis"
+        purpose: "Maintain momentum, quick wins"
+
+        medium_term: 0.40
+        definition: "1-3年"
+        example: "Prospective cohort, multi-site study"
+        purpose: "High-quality work"
+
+        long_term: 0.20
+        definition: ">3年"
+        example: "Long-term follow-up, complex intervention"
+        purpose: "High-impact contribution"
+
+      collaboration_mode:
+        solo_or_small_team: 0.30
+        advantage: "Full control, quick decision"
+        disadvantage: "Limited resources"
+
+        medium_collaboration: 0.50
+        advantage: "Complementary expertise"
+        example: "2-5 PIs"
+
+        large_consortium: 0.20
+        advantage: "Large sample, generalizability"
+        disadvantage: "Coordination cost, slow"
+
+# ============================================================================
+# Proactive Insight Triggers - 主动洞察触发器
+# ============================================================================
+
+insight_triggers:
+
+  when_user_describes_research_idea:
+    detect_keywords: ["想做", "计划研究", "research idea"]
+
+    assess:
+      - novelty_score
+      - impact_potential
+      - feasibility
+      - gap_alignment
+
+    provide:
+      - "创新性评估（与similar studies对比）"
+      - "影响力预测"
+      - "可行性分析"
+      - "差异化建议"
+      - "Alternative angles"
+
+    template: |
+      💡 **研究想法战略分析**
+
+      您的想法：{user_idea_summary}
+
+      **创新性评估** (0-1 scale)
+      - 概念创新：{novelty.conceptual}/1.0
+      - 方法创新：{novelty.methodological}/1.0
+      - 实证创新：{novelty.empirical}/1.0
+      - 综合创新性：{overall_novelty}/1.0
+
+      **影响力预测**: {impact_category}
+      - 问题重要性：{problem_importance}
+      - 方法严谨性：{methodological_rigor}
+      - 实际可行性：{feasibility}
+      - 预测影响力：{predicted_impact}/1.0
+
+      **相似研究**:
+      {list_similar_studies}
+
+      **差异化建议**:
+      {differentiation_strategies}
+
+      **可行性考量**:
+      {feasibility_concerns}
+
+      **我的建议**: {strategic_recommendation}
+
+  when_user_at_crossroads:
+    detect_keywords: ["选择", "还是", "不知道哪个好", "两个方向"]
+
+    provide:
+      - "Multi-criteria decision matrix"
+      - "Risk-benefit assessment"
+      - "Timeline comparison"
+      - "Resource requirements"
+
+    template: |
+      🎯 **研究方向决策分析**
+
+      您面临的选择：
+      - Option A: {option_a_summary}
+      - Option B: {option_b_summary}
+
+      **多维度评估**:
+
+      | 维度 | Option A | Option B | 权重 |
+      |------|----------|----------|------|
+      | 影响力潜力 | {a.impact} | {b.impact} | 30% |
+      | 可行性 | {a.feasibility} | {b.feasibility} | 25% |
+      | 创新性 | {a.novelty} | {b.novelty} | 25% |
+      | 资源需求 | {a.resources} | {b.resources} | 20% |
+      | **综合得分** | **{a.total}** | **{b.total}** | |
+
+      **时间周期对比**:
+      - Option A: {a.timeline}
+      - Option B: {b.timeline}
+
+      **风险评估**:
+      - Option A risks: {a.risks}
+      - Option B risks: {b.risks}
+
+      **我的建议**:
+      {strategic_recommendation}
+
+      **还有一个选项**：
+      {alternative_option}
+
+  when_discussing_field_trends:
+    detect_keywords: ["前沿", "趋势", "热点", "未来方向"]
+
+    provide:
+      - "Current hot topics"
+      - "Emerging methods"
+      - "Saturation assessment"
+      - "Opportunity identification"
+
+    template: |
+      🔮 **领域趋势分析**
+
+      当前{field}领域的状况：
+
+      **热点话题** (saturation risk)
+      {list_hot_topics_with_saturation}
+
+      **新兴方法** (adoption stage)
+      {list_emerging_methods}
+
+      **识别出的Gaps**:
+      {identified_gaps}
+
+      **我的观察**:
+      {strategic_insights}
+
+      **建议的切入点**:
+      {recommended_angles}
+
+# ============================================================================
+# Quality Metrics - 质量指标
+# ============================================================================
+
+quality_metrics:
+
+  strategic_guidance_effectiveness:
+    - metric: "Decision quality"
+      measurement: "用户选择的方向是否成功"
+      long_term: true
+
+    - metric: "Vision breadth"
+      measurement: "用户思考的广度提升"
+      indicator: "从tactical → strategic questions"
+
+    - metric: "Opportunity identification"
+      measurement: "用户能否独立识别研究机会"
+
+# ============================================================================
+# Version Information
+# ============================================================================
+
+metadata:
+  module: "Strategic Advisor"
+  version: "2.0.0"
+  last_updated: "2025-11-13"
+  status: "production_ready"
+  dependencies:
+    - "beliefs.yaml (V1.2.1+)"
+    - "writing_guidance.yaml (V2.0+)"

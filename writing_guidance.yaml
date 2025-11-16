@@ -1,0 +1,786 @@
+# Writing Guidance - 智能写作导师知识库
+# ACS-Mentor V2.0 Core Module
+# 研究全周期写作支持：从构思到发表
+
+# ============================================================================
+# Writing Phases - 写作阶段支持
+# ============================================================================
+
+writing_phases:
+
+  # --------------------------------------------------------------------------
+  # Phase 1: Ideation (构思阶段)
+  # --------------------------------------------------------------------------
+
+  ideation:
+    description: "从模糊想法到清晰研究问题"
+
+    guidance_areas:
+      - research_question_refinement      # 研究问题精炼
+      - literature_gap_identification     # 文献gap识别
+      - theoretical_framework_selection   # 理论框架选择
+      - hypothesis_formulation            # 假设形成
+
+    intervention_patterns:
+
+      when_question_vague:
+        trigger_keywords: ["想研究", "感兴趣", "不确定研究什么", "研究方向"]
+        template: |
+          💡 研究问题精炼框架
+
+          您的研究兴趣是 {topic}，让我们一起明确研究问题：
+
+          1️⃣ **核心问题** (What)
+          - 具体要研究什么现象/关系/效果？
+          - 能用一句话陈述吗？
+
+          2️⃣ **重要性** (Why)
+          - 为什么这个问题值得研究？
+          - 对学术/临床/政策有什么意义？
+
+          3️⃣ **研究现状** (Gap)
+          - 现有研究做了什么？
+          - 还有什么没做或做得不够好？
+
+          4️⃣ **独特贡献** (Novelty)
+          - 您的研究有什么独特之处？
+          - 与现有研究的差异在哪里？
+
+          基于这个框架，您可以尝试填写，我会帮您进一步完善。
+
+      when_gap_unclear:
+        trigger_keywords: ["不知道gap", "文献综述不知道写什么", "创新点"]
+        template: |
+          🔍 文献gap识别策略
+
+          针对 {topic} 领域，我建议三个识别gap的方法：
+
+          **方法1: 系统综述法**
+          - 搜索近5年的systematic reviews/meta-analyses
+          - 重点关注"limitations"和"future research"章节
+          - 这些往往直接指出了gap
+
+          **方法2: 矛盾识别法**
+          - 寻找研究结果的矛盾之处
+          - 分析为什么会有矛盾（设计？人群？方法？）
+          - 矛盾往往是创新点
+
+          **方法3: 方法学创新法**
+          - 识别现有研究的共同方法学局限
+          - 考虑：能否用更好的设计/分析方法？
+          - 能否在新人群/新环境验证？
+
+          您想从哪个方法入手？我可以提供具体指导。
+
+      when_needs_framework:
+        trigger_keywords: ["理论框架", "conceptual model", "机制"]
+        template: |
+          🏗️ 理论框架构建指导
+
+          研究 {topic} 时，理论框架帮助您：
+          - 明确关键变量和它们的关系
+          - 指导研究设计和测量
+          - 解释结果和机制
+
+          **常见框架类型**：
+
+          1. 因果路径框架 (Causal pathway)
+             - X → Mediator → Y
+             - 适用于：机制研究
+
+          2. 多因素模型 (Multifactorial model)
+             - X1, X2, X3... → Y
+             - 适用于：预测研究、风险因素识别
+
+          3. 调节效应框架 (Moderation)
+             - X → Y, 但效应大小取决于Moderator
+             - 适用于：异质性研究、个体化医疗
+
+          基于您的研究问题，我建议 {recommended_framework}。
+
+  # --------------------------------------------------------------------------
+  # Phase 2: Design (设计阶段)
+  # --------------------------------------------------------------------------
+
+  design:
+    description: "从研究问题到可执行方案"
+
+    guidance_areas:
+      - study_design_selection      # 研究设计选择
+      - statistical_method_selection # 统计方法选择
+      - sample_size_justification   # 样本量论证
+      - data_collection_planning    # 数据收集规划
+
+    # 研究设计决策树
+    design_decision_tree:
+
+      research_question_type:
+
+        causal_inference:
+          description: "研究X是否导致Y"
+          gold_standard: "Randomized Controlled Trial (RCT)"
+
+          alternatives:
+            - name: "Instrumental Variables (IV)"
+              when: "RCT不可行，但有valid instrument"
+              requirements:
+                - "Instrument与X强相关"
+                - "Instrument仅通过X影响Y"
+                - "Instrument与混杂因素无关"
+
+            - name: "Regression Discontinuity Design (RDD)"
+              when: "有明确的cutoff决定treatment"
+              requirements:
+                - "Cutoff附近as-if random"
+                - "足够的样本在cutoff附近"
+
+            - name: "Difference-in-Differences (DID)"
+              when: "有treatment和control组的前后数据"
+              requirements:
+                - "Parallel trends assumption"
+                - "No spillover effects"
+
+          guidance_template: |
+            您想研究 {exposure} 是否导致 {outcome}。
+
+            **理想设计**: RCT
+            - 随机分配exposure
+            - 控制已知和未知混杂
+
+            **RCT不可行时**，考虑准实验设计：
+
+            {list_alternatives_with_requirements}
+
+            **如果只能做观察性研究**：
+            1. 绘制DAG (Directed Acyclic Graph)
+            2. 识别最小充分调整集
+            3. 进行敏感性分析
+            4. 语言谨慎：用"association"而非"causation"
+
+        prediction:
+          description: "构建预测模型"
+
+          key_decisions:
+            - decision: "预测目标类型"
+              options:
+                - "诊断 (Diagnostic prediction)"
+                - "预后 (Prognostic prediction)"
+                - "治疗反应 (Treatment response)"
+
+            - decision: "预测时间窗口"
+              considerations:
+                - "时间点预测 vs. 时间窗预测"
+                - "短期 vs. 长期预后"
+
+            - decision: "验证策略"
+              requirements:
+                - "内部验证（必需）：Bootstrap或CV"
+                - "时间验证（推荐）：Temporal validation"
+                - "外部验证（金标准）：独立队列"
+
+          guidance_template: |
+            预测模型研究的关键设计要素：
+
+            1️⃣ **明确预测目标**
+            - 诊断 vs. 预后 vs. 治疗反应？
+            - 预测时间窗口？（如：6个月内的复发）
+
+            2️⃣ **样本量规划**
+            - 规则：每个预测变量至少10-20个events
+            - 例：10个变量的logistic模型需要100-200个events
+
+            3️⃣ **验证策略**（这是强制要求！）
+            - 最低要求：内部验证（Bootstrap 200+次或10-fold CV）
+            - 强烈推荐：外部验证（不同医院/地区/时间）
+
+            4️⃣ **临床实用性评估**
+            - Decision curve analysis
+            - Net benefit计算
+            - 与现有方法比较
+
+        descriptive:
+          description: "描述性/探索性研究"
+
+          focus_areas:
+            - "Representativeness (代表性)"
+            - "Generalizability (可推广性)"
+            - "Subgroup heterogeneity (异质性)"
+
+          guidance_template: |
+            描述性研究的价值最大化策略：
+
+            1️⃣ **明确样本代表性**
+            - 您的样本代表哪个人群？
+            - 纳入/排除标准的理由？
+            - 与一般人群的差异？
+
+            2️⃣ **与已有研究对比**
+            - 您的发现与文献一致吗？
+            - 如不一致，可能原因是？
+            - 这提供了什么新信息？
+
+            3️⃣ **探索异质性**
+            - 不同亚组的模式有差异吗？
+            - 这些差异有临床意义吗？
+            - 为未来研究生成假设
+
+            4️⃣ **诚实报告局限**
+            - 单中心 vs. 多中心
+            - 选择偏倚的可能性
+            - Generalizability的限制
+
+    # 统计方法顾问
+    statistical_method_advisor:
+
+      by_outcome_type:
+
+        continuous:
+          normal_distribution:
+            - method: "Linear Regression"
+              when: "需要调整协变量"
+              assumptions: ["线性关系", "残差正态", "方差齐性", "独立性"]
+              check: "Residual plots"
+
+            - method: "t-test / ANOVA"
+              when: "简单组间比较"
+              assumptions: ["正态分布", "方差齐性"]
+              check: "Shapiro-Wilk test, Levene's test"
+
+          non_normal:
+            - method: "Quantile Regression"
+              when: "对异常值稳健"
+              advantage: "不需要正态假设"
+
+            - method: "Log-transformation + Linear Regression"
+              when: "右偏数据"
+              note: "结果解释为几何平均数"
+
+            - method: "Non-parametric tests (Mann-Whitney, Kruskal-Wallis)"
+              when: "分布严重偏离正态"
+              limitation: "检验效能较低"
+
+        binary:
+          - method: "Logistic Regression"
+            when: "最常用选择，估计OR"
+            output: "Odds Ratio (OR)"
+            note: "罕见事件时OR≈RR"
+
+          - method: "Log-binomial Regression"
+            when: "患病率>10%，想估计RR"
+            output: "Risk Ratio (RR)"
+            note: "RR比OR更易解释"
+
+          - method: "Poisson Regression with robust SE"
+            when: "Log-binomial不收敛时的替代"
+            output: "Risk Ratio (RR)"
+
+        time_to_event:
+          - method: "Cox Proportional Hazards Model"
+            when: "生存分析的默认选择"
+            assumption: "Proportional hazards (PH)"
+            check: "Schoenfeld residuals test"
+            output: "Hazard Ratio (HR)"
+
+          - method: "Parametric Survival Models (Weibull, etc.)"
+            when: "PH假设违反或需要外推"
+            advantage: "可预测median survival time"
+
+          - method: "Time-dependent Cox model"
+            when: "协变量随时间变化"
+            example: "Treatment switching"
+
+        count:
+          - method: "Poisson Regression"
+            when: "Count outcome，均值≈方差"
+            check: "Dispersion parameter ≈ 1"
+
+          - method: "Negative Binomial Regression"
+            when: "Over-dispersion (方差>均值)"
+            note: "更常用于实际数据"
+
+      advanced_topics:
+        missing_data:
+          approaches:
+            - name: "Complete Case Analysis"
+              when: "MCAR且缺失<5%"
+              risk: "Bias if not MCAR, power loss"
+
+            - name: "Multiple Imputation"
+              when: "MAR，缺失5-40%"
+              recommendation: "M=20-50 imputations"
+              software: "mice (R), mi (Python)"
+
+            - name: "Sensitivity Analysis"
+              when: "Concerned about MNAR"
+              approach: "Pattern mixture models"
+
+        mediation_analysis:
+          framework: "Causal mediation (VanderWeele)"
+          requirements:
+            - "No unmeasured confounding of X→M, M→Y, X→Y"
+            - "No X-M interaction affecting Y"
+          output:
+            - "Natural Direct Effect (NDE)"
+            - "Natural Indirect Effect (NIE)"
+            - "Proportion mediated"
+
+  # --------------------------------------------------------------------------
+  # Phase 3: Analysis (分析阶段)
+  # --------------------------------------------------------------------------
+
+  analysis:
+    description: "从数据到洞察"
+
+    guidance_areas:
+      - analysis_strategy        # 分析策略
+      - result_interpretation    # 结果解读
+      - visualization_design     # 可视化设计
+      - sensitivity_analysis     # 敏感性分析
+
+    # 可视化原则
+    visualization_principles:
+
+      figure_types:
+
+        comparison:
+          recommended:
+            - name: "Forest Plot"
+              use: "展示多个效应量及CI"
+              example: "Meta-analysis, 亚组分析"
+
+            - name: "Coefficient Plot"
+              use: "回归系数可视化"
+              advantage: "比表格更直观"
+
+            - name: "Violin Plot"
+              use: "展示分布+比较"
+              advantage: "比box plot信息更丰富"
+
+          avoid:
+            - "3D charts (难以解读)"
+            - "Pie charts for >5 categories (角度难比较)"
+
+        distribution:
+          recommended:
+            - name: "Histogram + Density Curve"
+              use: "展示连续变量分布"
+
+            - name: "Box Plot + Jitter Points"
+              use: "展示分布+outliers"
+
+          avoid:
+            - "Bar charts for continuous data (信息丢失)"
+
+        association:
+          recommended:
+            - name: "Scatter Plot + Smooth"
+              use: "双连续变量关系"
+              enhancement: "Add confidence band"
+
+            - name: "Heatmap"
+              use: "相关性矩阵可视化"
+              tip: "Cluster rows/columns"
+
+      design_checklist:
+        essential_elements:
+          - "坐标轴清晰标注（含单位）"
+          - "Error bars定义（SE vs. CI vs. SD）"
+          - "样本量标注"
+          - "统计显著性标记（如适用）"
+
+        quality_enhancements:
+          - "Color-blind friendly palette (推荐viridis)"
+          - "足够的字体大小（>10pt）"
+          - "高分辨率（≥300 dpi for publication）"
+          - "Self-contained caption"
+
+    # 结果解读指导
+    interpretation_guidance:
+
+      statistical_vs_clinical:
+        template: |
+          ⚠️ 统计显著性 ≠ 临床重要性
+
+          您的结果：{statistic} = {value}, p = {p_value}
+
+          **统计层面**：
+          - p < 0.05，reject null hypothesis
+
+          **临床层面**需要考虑：
+          1️⃣ **效应量大小**
+          - 效应量是 {effect_size}
+          - 临床上这个大小有意义吗？
+
+          2️⃣ **置信区间**
+          - 95% CI: [{ci_lower}, {ci_upper}]
+          - CI包含临床重要阈值吗？
+
+          3️⃣ **NNT/NNH**（如适用）
+          - 需要治疗多少人获得1个额外获益？
+
+          建议在Discussion中明确区分统计与临床意义。
+
+      null_results:
+        template: |
+          阴性结果的解读框架
+
+          您的结果：p = {p_value} (non-significant)
+
+          **可能的解释**：
+
+          1️⃣ **真的没有效应** (True null)
+          - 这是有价值的发现！
+          - 可以终止无效干预的研究
+
+          2️⃣ **统计功效不足** (Underpowered)
+          - 您的样本量是 N = {n}
+          - Post-hoc power: {power}
+          - 可能存在效应但未检测到
+
+          3️⃣ **效应量太小** (Small effect)
+          - CI: [{ci_lower}, {ci_upper}]
+          - 可能有微小效应，但临床不重要
+
+          4️⃣ **异质性** (Heterogeneity)
+          - 总体无效应，但某些亚组有效应
+          - 考虑探索性亚组分析
+
+          建议：诚实报告，强调研究的贡献。
+
+  # --------------------------------------------------------------------------
+  # Phase 4: Writing (写作阶段)
+  # --------------------------------------------------------------------------
+
+  writing:
+    description: "从结果到发表"
+
+    guidance_areas:
+      - structure_optimization      # 结构优化
+      - argument_strengthening      # 论证加强
+      - discussion_deepening        # 讨论深化
+      - limitation_honesty          # 局限性诚实
+
+    # Discussion结构框架
+    discussion_framework:
+
+      sections:
+        - section: "Principal Findings"
+          length: "1 paragraph"
+          content_guide: |
+            **目的**：简明总结主要发现
+
+            **包含**：
+            - 最重要的1-3个发现
+            - 定量结果（effect size + CI）
+            - 与研究假设的关系
+
+            **避免**：
+            - 重复Results部分
+            - 引入新信息
+            - 过度解读
+
+            **模板**：
+            "In this [study design] of [N] [population], we found that [exposure]
+            was associated with [effect size] [direction] in [outcome] (95% CI:
+            [CI], p = [p-value]). This finding [supports/contradicts] our hypothesis
+            that..."
+
+        - section: "Comparison with Literature"
+          length: "2-3 paragraphs"
+          content_guide: |
+            **目的**：将发现置于现有知识背景中
+
+            **结构**：
+
+            1️⃣ **一致的发现** (1段)
+            - 哪些研究有类似发现？
+            - 为什么一致？（相似设计/人群/方法）
+
+            2️⃣ **不一致的发现** (1段)
+            - 哪些研究有不同发现？
+            - 可能原因？（设计差异/人群差异/方法差异）
+
+            3️⃣ **本研究的独特贡献** (1段)
+            - 克服了哪些已有研究的局限？
+            - 提供了什么新信息？
+            - 对领域的推进是什么？
+
+            **引用策略**：
+            - 优先引用系统综述/Meta分析
+            - 引用最新和最相关的研究
+            - 平衡支持和反对的证据
+
+        - section: "Mechanisms and Implications"
+          length: "1-2 paragraphs"
+          content_guide: |
+            **目的**：解释机制和意义
+
+            **Mechanisms (机制)** - 如适用
+            - 可能的生物学/社会学/心理学机制
+            - 与理论框架的联系
+            - 需要进一步验证的机制假设
+
+            **Implications (意义)**
+            - 临床意义：改变实践？指导决策？
+            - 政策意义：inform政策制定？
+            - 研究意义：启发future research方向
+
+            **注意**：
+            - 如果是观察性研究，机制讨论需谨慎
+            - 意义讨论要realistic，不过度承诺
+
+        - section: "Strengths and Limitations"
+          length: "1-2 paragraphs"
+          content_guide: |
+            **Strengths** (简洁，3-4点)
+            - 方法学优势（设计/样本/分析）
+            - 相比已有研究的改进
+
+            **Limitations** (诚实，具体)
+
+            必须讨论的局限：
+            1️⃣ **内部效度威胁**
+            - 选择偏倚
+            - 信息偏倚/测量误差
+            - 残留混杂
+
+            2️⃣ **外部效度限制**
+            - Generalizability到哪些人群？
+            - 不能generalize到哪些人群？
+
+            3️⃣ **统计局限**
+            - 样本量限制
+            - 多重比较
+            - 检验效能
+
+            4️⃣ **对结论的影响**
+            - 每个limitation如何影响结果解读？
+            - 结论的确定性程度？
+
+            **避免**：
+            - 套话："样本量有限" (要说具体影响)
+            - 逃避：不提明显的局限
+            - 过度辩护：为局限找借口
+
+      # 论证加强技巧
+      argumentation_techniques:
+
+        strengthen_causal_claim:
+          framework: "Bradford Hill Criteria"
+          criteria:
+            - name: "Strength of association"
+              note: "大的effect size增强因果可信度"
+
+            - name: "Consistency"
+              note: "多个研究重复发现"
+
+            - name: "Temporality"
+              note: "Exposure在Outcome之前"
+
+            - name: "Dose-response"
+              note: "剂量-反应关系"
+
+            - name: "Biological plausibility"
+              note: "有合理的生物学机制"
+
+          template: |
+            虽然本研究是观察性设计，但因果关系的证据较强，因为：
+
+            1. **强关联**：{effect_size}的效应量在临床上显著
+            2. **一致性**：与{previous_studies}的发现一致
+            3. **时序性**：纵向设计确保exposure在outcome之前
+            4. **剂量-反应**：{dose_response_evidence}
+            5. **生物学合理性**：{mechanism}
+
+            但仍需RCT进一步验证。
+
+        address_limitations:
+          strategies:
+            - strategy: "Acknowledge honestly"
+              example: "我们的研究存在选择偏倚，因为..."
+
+            - strategy: "Quantify impact when possible"
+              example: "敏感性分析显示，即使存在20%的未测量混杂，主要结论仍然稳健"
+
+            - strategy: "Discuss mitigation"
+              example: "为减少信息偏倚，我们使用了validated questionnaire"
+
+            - strategy: "Frame implications"
+              example: "尽管存在这些局限，本研究仍然提供了first evidence..."
+
+# ============================================================================
+# Proactive Guidance Triggers - 主动指导触发器
+# ============================================================================
+
+guidance_triggers:
+
+  when_user_mentions:
+
+    - keywords: ["不知道用什么设计", "研究设计选择", "study design"]
+      activate: design_decision_tree
+      mode: "interactive_consultation"
+      response_template: |
+        让我帮您选择合适的研究设计。
+
+        首先，您的研究问题的核心是：
+        - [ ] 因果推断（X是否导致Y）
+        - [ ] 预测（构建预测模型）
+        - [ ] 描述/探索（描述现象或关系）
+
+        请告诉我是哪一类，我会提供针对性建议。
+
+    - keywords: ["统计方法", "用什么分析", "statistical test"]
+      activate: statistical_method_advisor
+      mode: "decision_tree_guidance"
+      response_template: |
+        统计方法选择取决于您的outcome类型。请告诉我：
+
+        您的outcome变量是：
+        - [ ] 连续变量（如血压、体重）
+        - [ ] 二分类变量（如死亡/存活）
+        - [ ] 时间-事件（如生存时间）
+        - [ ] 计数变量（如住院次数）
+
+        然后我会推荐合适的方法。
+
+    - keywords: ["图表", "可视化", "怎么画图"]
+      activate: visualization_principles
+      mode: "template_provision"
+      response_template: |
+        让我帮您设计图表。
+
+        您想展示：
+        - [ ] 组间比较
+        - [ ] 分布特征
+        - [ ] 变量关联
+        - [ ] 其他
+
+        我会提供最佳实践和checklist。
+
+    - keywords: ["讨论", "discussion不知道写什么"]
+      activate: discussion_framework
+      mode: "structured_template"
+      response_template: |
+        Discussion遵循标准结构：
+
+        1. Principal Findings (1段)
+        2. Comparison with Literature (2-3段)
+        3. Mechanisms & Implications (1-2段)
+        4. Strengths & Limitations (1-2段)
+
+        我会为每个部分提供具体指导。您想从哪部分开始？
+
+# ============================================================================
+# Integration with Critic Mode - 与批判模式的整合
+# ============================================================================
+
+critic_to_mentor_handoff:
+
+  principle: "先纠错，后教学"
+
+  template: |
+    ⚠️ **[问题识别 - Critic Mode]**
+    {detected_error}
+
+    💡 **[理解原理 - Mentor Mode]**
+    为什么这样是有问题的？
+    {conceptual_explanation}
+
+    ✅ **[正确做法 - Mentor Mode]**
+    推荐的方法/表述是：
+    {correct_approach}
+
+    📚 **[延伸学习 - Mentor Mode]**
+    相关知识点：
+    {learning_resources}
+
+  examples:
+
+    example_1:
+      error: "用logistic regression估计RR"
+      critic_response: "⚠️ 方法选择不当：患病率>10%时，OR会夸大关联强度"
+      mentor_explanation: |
+        💡 OR vs RR的区别：
+        - OR (Odds Ratio): Logistic regression输出
+        - RR (Risk Ratio): 更直观，但需要log-binomial regression
+
+        当患病率>10%时，OR≠RR，且OR会高估效应。
+
+      correct_approach: |
+        ✅ 推荐：
+        使用log-binomial regression估计RR：
+        ```r
+        model <- glm(outcome ~ exposure + covariates,
+                     family = binomial(link = "log"),
+                     data = data)
+        ```
+
+      learning_resource: "参考：Zou G. Modified Poisson regression. Am J Epidemiol. 2004"
+
+    example_2:
+      error: "未报告validation"
+      critic_response: "⚠️ 严重遗漏：预测模型必须经过验证"
+      mentor_explanation: |
+        💡 为什么验证如此重要？
+
+        训练集性能总是过于乐观（过拟合）。
+        真正的问题是：模型在新数据上表现如何？
+
+        没有验证 = 不知道能否trust这个模型
+
+      correct_approach: |
+        ✅ 验证方法（按推荐程度）：
+
+        1. 外部验证（金标准）
+           - 独立医院/地区/时间的队列
+
+        2. 时间验证
+           - 用早期数据训练，晚期数据验证
+
+        3. 内部验证（最低要求）
+           - Bootstrap (推荐200-500次)
+           - Cross-validation (10-fold CV)
+
+      learning_resource: "TRIPOD Statement (Collins et al. 2015)"
+
+# ============================================================================
+# Quality Metrics - 质量指标
+# ============================================================================
+
+quality_metrics:
+
+  guidance_effectiveness:
+    - metric: "User采纳率"
+      target: 0.85
+      measurement: "提供建议后用户是否采纳"
+
+    - metric: "理解深度"
+      target: 0.80
+      measurement: "用户能否解释为什么这样做"
+
+    - metric: "独立性提升"
+      target: "每月+10%"
+      measurement: "需要guidance的频率降低"
+
+  response_quality:
+    - dimension: "Clarity (清晰度)"
+      criteria: "用户能理解建议"
+
+    - dimension: "Actionability (可操作性)"
+      criteria: "提供具体的next steps"
+
+    - dimension: "Depth (深度)"
+      criteria: "不只是告诉做什么，还解释为什么"
+
+# ============================================================================
+# Version Information
+# ============================================================================
+
+metadata:
+  module: "Writing Mentor"
+  version: "2.0.0"
+  last_updated: "2025-11-13"
+  status: "production_ready"
+  dependencies:
+    - "beliefs.yaml (V1.2.1+)"
+    - "goals.yaml (V1.2.1+)"
