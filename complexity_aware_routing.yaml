@@ -1,0 +1,765 @@
+# Complexity-Aware Routing Configuration - ACS-Mentor V2.1
+# 任务复杂度感知的智能路由系统
+
+# ============================================================================
+# 设计哲学
+# ============================================================================
+
+philosophy: |
+  从Claude-Flow的Swarm vs Hive-Mind双模式启发：
+  - 简单问题：快速响应（quick_guidance）
+  - 复杂问题：深度引导（deep_mentorship）
+  - 自动根据(复杂度 × 用户水平)矩阵匹配最佳模式
+
+version: "2.1.0"
+design_date: "2025-11-16"
+
+# ============================================================================
+# Task Complexity Scoring - 任务复杂度评分
+# ============================================================================
+
+task_complexity_scoring:
+
+  description: |
+    多维度评估用户问题的复杂度
+    输出: 0.0-1.0的复杂度分数
+
+  dimensions:
+
+    # 维度1: 概念深度 (Conceptual Depth)
+    conceptual_depth:
+      weight: 0.40
+
+      signal_mapping:
+        low_complexity:  # 0.0-0.3
+          keywords:
+            - "p值"
+            - "显著性"
+            - "描述统计"
+            - "mean"
+            - "median"
+            - "t检验"
+            - "卡方检验"
+          characteristics:
+            - "单一概念"
+            - "教科书级别"
+            - "有标准答案"
+
+        medium_complexity:  # 0.4-0.7
+          keywords:
+            - "倾向性评分"
+            - "propensity score"
+            - "工具变量"
+            - "敏感性分析"
+            - "multiple imputation"
+            - "validation"
+            - "Cox回归"
+          characteristics:
+            - "需要方法论知识"
+            - "涉及假设检验"
+            - "多个概念组合"
+
+        high_complexity:  # 0.8-1.0
+          keywords:
+            - "因果图"
+            - "DAG"
+            - "反事实推理"
+            - "counterfactual"
+            - "识别策略"
+            - "marginal structural model"
+            - "g-computation"
+            - "difference-in-differences"
+          characteristics:
+            - "需要理论框架"
+            - "多层次抽象思维"
+            - "无唯一正确答案"
+
+      scoring_logic: |
+        def score_conceptual_depth(user_message):
+            score = 0.0
+
+            # 检测关键词
+            low_matches = count_keyword_matches(user_message, low_complexity.keywords)
+            medium_matches = count_keyword_matches(user_message, medium_complexity.keywords)
+            high_matches = count_keyword_matches(user_message, high_complexity.keywords)
+
+            # 分数计算
+            if high_matches > 0:
+                score = 0.8 + min(high_matches * 0.05, 0.2)
+            elif medium_matches > 0:
+                score = 0.4 + min(medium_matches * 0.1, 0.3)
+            elif low_matches > 0:
+                score = 0.1 + min(low_matches * 0.05, 0.2)
+            else:
+                # 无法分类，默认中等
+                score = 0.5
+
+            return min(score, 1.0)
+
+    # 维度2: 用户不确定性 (User Uncertainty)
+    user_uncertainty:
+      weight: 0.35
+
+      signal_mapping:
+        low_uncertainty:  # 0.0-0.3
+          patterns:
+            - "用户问题明确"
+            - "提供了具体参数"
+            - "已经有初步方案"
+          examples:
+            - "RCT样本量计算，power=0.8，effect size=0.3，应该用什么公式？"
+            - "我的logistic regression结果AUC=0.75，这个值可以接受吗？"
+
+        medium_uncertainty:  # 0.4-0.7
+          patterns:
+            - "用户有疑问但方向清楚"
+            - "在多个选项间犹豫"
+            - "需要confirm自己的理解"
+          signals:
+            - "不确定"
+            - "应该用哪个"
+            - "是否可以"
+            - "哪个更好"
+          examples:
+            - "我的研究是RCT，不确定应该用intention-to-treat还是per-protocol分析？"
+
+        high_uncertainty:  # 0.8-1.0
+          patterns:
+            - "用户完全困惑"
+            - "不知道从何入手"
+            - "需要全面指导"
+          signals:
+            - "不知道怎么做"
+            - "完全不理解"
+            - "能教我吗"
+            - "从零开始"
+          examples:
+            - "我想做因果推断，但不知道从哪里开始，也不理解有哪些方法可以用。"
+
+      scoring_logic: |
+        def score_user_uncertainty(user_message):
+            score = 0.0
+
+            # 检测不确定性信号
+            high_uncertainty_signals = [
+                "不知道", "完全不理解", "从零开始", "confused",
+                "no idea", "totally lost"
+            ]
+
+            medium_uncertainty_signals = [
+                "不确定", "应该用哪个", "是否可以", "哪个更好",
+                "not sure", "which is better", "should I use"
+            ]
+
+            # 检测具体性（低不确定性的信号）
+            has_specific_parameters = check_for_numbers_or_specifics(user_message)
+            # 例如: "power=0.8", "N=200", "AUC=0.75"
+
+            # 评分
+            if any(sig in user_message.lower() for sig in high_uncertainty_signals):
+                score = 0.85
+            elif any(sig in user_message.lower() for sig in medium_uncertainty_signals):
+                score = 0.55
+            elif has_specific_parameters:
+                score = 0.2
+            else:
+                # 默认中等不确定性
+                score = 0.5
+
+            return score
+
+    # 维度3: 上下文依赖性 (Context Dependency)
+    context_dependency:
+      weight: 0.25
+
+      signal_mapping:
+        low_dependency:  # 0.0-0.3
+          description: "孤立问题，无需历史上下文"
+          characteristics:
+            - "问题自包含"
+            - "无需回顾之前讨论"
+            - "首次提问"
+          examples:
+            - "什么是p值？"
+            - "如何计算样本量？"
+
+        medium_dependency:  # 0.4-0.7
+          description: "需要部分历史上下文"
+          characteristics:
+            - "涉及之前讨论的延伸"
+            - "需要理解研究全貌"
+            - "多轮对话的一部分"
+          signals:
+            - "刚才您说"
+            - "基于之前的"
+            - "我的研究"
+            - "这个项目"
+          examples:
+            - "基于之前您建议的RCT设计，我现在想确定样本量。"
+
+        high_dependency:  # 0.8-1.0
+          description: "高度依赖研究全貌和历史"
+          characteristics:
+            - "需要整个研究背景"
+            - "涉及多个先前决策"
+            - "战略性问题"
+          signals:
+            - "综合考虑"
+            - "整体方案"
+            - "从选题到发表"
+          examples:
+            - "综合我之前的研究设计、统计方法和目标期刊，我应该如何规划接下来的分析？"
+
+      scoring_logic: |
+        def score_context_dependency(user_message, enriched_context):
+            score = 0.0
+
+            # 检测上下文引用信号
+            context_reference_signals = [
+                "刚才", "之前", "earlier", "previous", "我的研究", "这个项目",
+                "my study", "this project"
+            ]
+
+            strategic_signals = [
+                "综合", "整体", "overall", "strategic", "从选题到",
+                "全面规划"
+            ]
+
+            has_context_ref = any(sig in user_message.lower() for sig in context_reference_signals)
+            has_strategic = any(sig in user_message.lower() for sig in strategic_signals)
+
+            # 检查是否有历史对话
+            has_history = enriched_context.get('recent_history') and len(enriched_context['recent_history']) > 0
+
+            # 评分
+            if has_strategic:
+                score = 0.9
+            elif has_context_ref and has_history:
+                score = 0.6
+            elif has_history and len(enriched_context['recent_history']) >= 3:
+                # 多轮对话，即使没显式引用也有依赖性
+                score = 0.5
+            else:
+                score = 0.2
+
+            return score
+
+  # 总复杂度计算公式
+  formula: |
+    def calculate_task_complexity(user_message, enriched_context):
+        """
+        计算任务总复杂度
+        Returns: 0.0-1.0
+        """
+
+        # 计算各维度分数
+        conceptual_score = score_conceptual_depth(user_message)
+        uncertainty_score = score_user_uncertainty(user_message)
+        context_score = score_context_dependency(user_message, enriched_context)
+
+        # 加权求和
+        total_complexity = (
+            conceptual_score * 0.40 +
+            uncertainty_score * 0.35 +
+            context_score * 0.25
+        )
+
+        return total_complexity
+
+  # 复杂度分级
+  complexity_levels:
+    trivial:
+      range: [0.0, 0.2]
+      description: "极简单问题，定义级别"
+
+    simple:
+      range: [0.2, 0.4]
+      description: "简单问题，教科书级别"
+
+    moderate:
+      range: [0.4, 0.6]
+      description: "中等问题，需要方法论知识"
+
+    complex:
+      range: [0.6, 0.8]
+      description: "复杂问题，需要深入理解"
+
+    very_complex:
+      range: [0.8, 1.0]
+      description: "非常复杂，需要战略性思维"
+
+# ============================================================================
+# Mode Routing Matrix - 模式路由矩阵
+# ============================================================================
+
+mode_routing_matrix:
+
+  description: |
+    根据 (complexity_score, user_level) 二维矩阵
+    路由到最合适的响应模式
+
+  routing_table:
+    # [complexity, user_level] → mode + style
+
+    # Row 1: Trivial/Simple complexity (0.0-0.4)
+    - condition:
+        complexity: [0.0, 0.4]
+        user_level: "any"
+      route_to: "quick_guidance"
+      style:
+        response_length: "1-2句话"
+        depth: "direct_answer"
+        examples: 0
+        resources: 0
+      rationale: "简单问题无需复杂解释，快速准确即可"
+
+    # Row 2: Moderate complexity + Intermediate/Advanced user
+    - condition:
+        complexity: [0.4, 0.6]
+        user_level: ["intermediate", "advanced"]
+      route_to: "mentor_lite"
+      style:
+        response_length: "简化解释 + 1个例子"
+        depth: "conceptual_explanation"
+        examples: 1
+        resources: 1
+      rationale: "有经验用户遇到中等问题，提供概念框架和关键资源"
+
+    # Row 3: Moderate complexity + Novice user
+    - condition:
+        complexity: [0.4, 0.6]
+        user_level: "novice"
+      route_to: "standard_mentor"
+      style:
+        response_length: "结构化指导 + 2-3个例子"
+        depth: "step_by_step"
+        examples: 2-3
+        resources: 2-3
+      rationale: "新手需要更详细的步骤指导"
+
+    # Row 4: Complex problem + Advanced user
+    - condition:
+        complexity: [0.6, 0.8]
+        user_level: "advanced"
+      route_to: "strategic_advisor"
+      style:
+        response_length: "战略讨论 + tradeoffs分析"
+        depth: "high_level_thinking"
+        examples: "实际研究案例"
+        resources: "前沿文献"
+      rationale: "高手遇复杂问题，需要战略视角而非手把手教学"
+
+    # Row 5: Complex problem + Intermediate user
+    - condition:
+        complexity: [0.6, 0.8]
+        user_level: "intermediate"
+      route_to: "standard_mentor"
+      style:
+        response_length: "完整框架 + 多角度分析"
+        depth: "comprehensive"
+        examples: 3-4
+        resources: 3-4
+      rationale: "中级用户处理复杂问题，需要全面支持"
+
+    # Row 6: Complex problem + Novice user
+    - condition:
+        complexity: [0.6, 0.8]
+        user_level: "novice"
+      route_to: "deep_mentorship"
+      style:
+        response_length: "交互式引导，可能需要多轮"
+        depth: "concept_building"
+        examples: "从基础到高级的渐进式例子"
+        resources: "入门+进阶资源"
+        interaction: "multi_turn"
+      rationale: "新手遇复杂问题，可能超出当前能力，需要降维分解+能力培养"
+
+    # Row 7: Very complex (0.8-1.0) + any user
+    - condition:
+        complexity: [0.8, 1.0]
+        user_level: "any"
+      route_to: "deep_mentorship"
+      style:
+        response_length: "深度引导"
+        depth: "fundamental_principles"
+        context_tracking: true
+        multi_turn: true
+      rationale: "极复杂问题对任何人都需要深度引导"
+
+  # 路由决策函数
+  routing_logic: |
+    def select_mode_from_complexity(complexity_score, user_level):
+        """
+        根据复杂度和用户水平选择模式
+        Returns: mode name + style config
+        """
+
+        # 遍历routing_table，找到匹配的条件
+        for route in routing_table:
+            complexity_match = (
+                route.condition.complexity[0] <= complexity_score < route.condition.complexity[1]
+            )
+
+            user_level_match = (
+                route.condition.user_level == "any" or
+                user_level in route.condition.user_level or
+                route.condition.user_level == user_level
+            )
+
+            if complexity_match and user_level_match:
+                log(f"[Routing] Matched route: {route.route_to}")
+                log(f"  • Complexity: {complexity_score:.2f}")
+                log(f"  • User level: {user_level}")
+                log(f"  • Style: {route.style}")
+
+                return {
+                    "mode": route.route_to,
+                    "style": route.style,
+                    "rationale": route.rationale
+                }
+
+        # 默认降级
+        log("[Routing] No match found, using default: standard_mentor")
+        return {
+            "mode": "standard_mentor",
+            "style": default_style,
+            "rationale": "Default fallback"
+        }
+
+# ============================================================================
+# Response Style Specifications - 响应风格规范
+# ============================================================================
+
+response_styles:
+
+  quick_guidance:
+    description: "快速指正模式，1-2句话"
+    template: |
+      {direct_answer}
+
+      {optional_one_sentence_explanation}
+
+    max_length: 200
+    tone: "简洁、准确"
+    examples_count: 0
+    resource_links: 0
+
+  mentor_lite:
+    description: "轻量级导师模式，概念+1例子"
+    template: |
+      {concept_explanation}
+
+      **示例**:
+      {one_example}
+
+      {optional_resource_link}
+
+    max_length: 500
+    tone: "清晰、友好"
+    examples_count: 1
+    resource_links: 1
+
+  standard_mentor:
+    description: "标准导师模式，完整结构化指导"
+    template: |
+      {conceptual_framework}
+
+      **方法/策略**:
+      {multiple_approaches}
+
+      **示例**:
+      {2_3_examples}
+
+      **延伸阅读**:
+      {2_3_resources}
+
+    max_length: 1500
+    tone: "系统、全面"
+    examples_count: 2-3
+    resource_links: 2-3
+
+  deep_mentorship:
+    description: "深度导师模式，概念构建+交互式"
+    template: |
+      {fundamental_principles}
+
+      {layered_explanation}  # 从基础到高级
+
+      **练习/思考**:
+      {interactive_questions}
+
+      **资源路径**:
+      {learning_roadmap}
+
+      {follow_up_prompt}  # 提示用户可以继续提问
+
+    max_length: 2500
+    tone: "耐心、引导式"
+    examples_count: "渐进式多个"
+    resource_links: "分层次"
+    interaction_style: "multi_turn_expected"
+
+  strategic_advisor:
+    description: "战略顾问模式，高层次思维"
+    template: |
+      {big_picture_context}
+
+      **Tradeoffs分析**:
+      {option_1_pros_cons}
+      {option_2_pros_cons}
+
+      **影响力考量**:
+      {impact_prediction}
+
+      **建议**:
+      {strategic_recommendation}
+
+    max_length: 1200
+    tone: "客观、分析式"
+    examples_count: "实际研究案例"
+    resource_links: "前沿文献"
+    focus: "decision_support"
+
+# ============================================================================
+# Integration with V2.1 Decision Logic - 与V2.1决策逻辑集成
+# ============================================================================
+
+integration_workflow:
+
+  in_pre_guidance_phase:
+    description: "在Pre-Guidance阶段计算复杂度"
+    implementation: |
+      # 在 pre_guidance_phase() 中添加 Step 6
+
+      enriched_context['complexity_score'] = calculate_task_complexity(
+          user_message=user_message,
+          enriched_context=enriched_context
+      )
+
+      enriched_context['complexity_level'] = get_complexity_level(
+          enriched_context['complexity_score']
+      )
+
+  in_decision_phase:
+    description: "在Decision阶段选择模式"
+    implementation: |
+      # 在 calculate_urgency_v2_enhanced() 中
+
+      # 基于复杂度选择模式（替代或补充原有的mode selection）
+      routing_result = select_mode_from_complexity(
+          complexity_score=enriched_context['complexity_score'],
+          user_level=enriched_context['user_profile'].overall_level
+      )
+
+      recommended_mode = routing_result['mode']
+      response_style = routing_result['style']
+
+  in_generation_phase:
+    description: "在Generation阶段应用style"
+    implementation: |
+      # 在 generate_guidance_response() 中
+
+      guidance_response = generate_with_style(
+          user_message=user_message,
+          decision_result=decision_result,
+          style_config=routing_result['style'],
+          template_cases=enriched_context['similar_success_cases']
+      )
+
+# ============================================================================
+# 示例场景
+# ============================================================================
+
+example_scenarios:
+
+  scenario_1_simple_question:
+    user_message: "什么是p值？"
+    user_level: "novice"
+
+    complexity_breakdown:
+      conceptual_depth: 0.1  # 低复杂度关键词
+      user_uncertainty: 0.2  # 问题明确
+      context_dependency: 0.2  # 孤立问题
+      total: 0.15
+
+    routing_result:
+      mode: "quick_guidance"
+      style: "1-2句话直接回答"
+
+    sample_response: |
+      p值是在零假设为真的情况下，观察到当前数据（或更极端）的概率。
+      通常p<0.05被视为统计显著，但不代表临床重要性。
+
+  scenario_2_moderate_question_intermediate:
+    user_message: "我的观察性研究想控制混杂，应该用倾向性评分还是多元回归？"
+    user_level: "intermediate"
+
+    complexity_breakdown:
+      conceptual_depth: 0.5  # 中等关键词（倾向性评分）
+      user_uncertainty: 0.55  # 有疑问但方向清楚
+      context_dependency: 0.4  # 部分依赖研究背景
+      total: 0.49
+
+    routing_result:
+      mode: "mentor_lite"
+      style: "概念解释 + 1个例子 + 1个资源"
+
+    sample_response: |
+      两种方法各有优势：
+
+      **多元回归**: 适合混杂因素数量适中（<10），且关系相对线性。
+      **倾向性评分**: 适合混杂因素多，或需要模仿RCT的平衡性。
+
+      **示例**: 如果您有15个混杂因素且样本量N=300，倾向性评分可能更稳健（避免过拟合）。
+
+      **延伸**: Austin (2011). An Introduction to Propensity Score Methods. (经典综述)
+
+  scenario_3_complex_novice:
+    user_message: "我想证明社交媒体使用导致抑郁，但只有横断面数据，不知道怎么做因果推断。"
+    user_level: "novice"
+
+    complexity_breakdown:
+      conceptual_depth: 0.8  # 因果推断高复杂度
+      user_uncertainty: 0.9  # 完全不知道怎么做
+      context_dependency: 0.6  # 需要研究全貌
+      total: 0.78
+
+    routing_result:
+      mode: "deep_mentorship"
+      style: "概念构建 + 多层次解释 + 交互式"
+
+    sample_response: |
+      🎓 让我们从因果推断的基础开始：
+
+      **核心问题**: 因果 vs. 关联
+
+      横断面数据的挑战：
+      1. 无法建立时序性（X→Y还是Y→X？）
+      2. 无法排除混杂
+      3. 无法排除反向因果
+
+      **可行路径**（从简到难）：
+
+      **路径1**: 调整语言（最简单）
+      - 不说"导致"，改为"关联"
+      - Logistic regression可以用，但结论谨慎
+
+      **路径2**: 方法改进
+      - 如果可能，改为纵向设计（6个月follow-up）
+      - 使用工具变量（如地区social media普及率）
+      - 敏感性分析
+
+      **路径3**: 理论框架
+      - 构建因果图（DAG）识别混杂路径
+      - 即使横断面，也能明确假设
+
+      **练习**: 您认为"抑郁→多用社交媒体"（反向因果）的可能性有多大？
+
+      **学习路径**:
+      1. 先理解DAG: Pearl的因果图入门
+      2. 再学习工具变量: Angrist的自然实验方法
+      3. 最后看实例: Twenge (2018)的社交媒体研究
+
+      有疑问随时问！我们可以一步步来。
+
+  scenario_4_very_complex_advanced:
+    user_message: "综合我的研究（社交媒体与抑郁的RCT不可行），目标期刊是NEJM level，我应该如何设计一个convincing的因果推断策略？包括识别策略、稳健性检验、以及如何应对审稿人质疑。"
+    user_level: "advanced"
+
+    complexity_breakdown:
+      conceptual_depth: 0.9  # 高级因果推断
+      user_uncertainty: 0.6  # 有方向但需要战略
+      context_dependency: 0.95  # 高度依赖研究全貌
+      total: 0.82
+
+    routing_result:
+      mode: "deep_mentorship"  # 即使advanced也需要deep（因为complexity很高）
+      style: "战略性+多维度分析"
+
+    sample_response: |
+      📊 **战略级因果推断设计**
+
+      对于NEJM-level期刊，您需要的是**准实验设计 + 多重稳健性**策略。
+
+      **识别策略核心**:
+
+      方案A: **Target Trial Emulation** (最强)
+      - 模拟理想RCT的设计
+      - 明确eligibility, treatment assignment, follow-up
+      - Hernán的框架 (2016, Ann Intern Med)
+
+      方案B: **工具变量 + DID**
+      - IV: 利用政策变化（如某地区social media ban）
+      - DID: Before-after + treatment-control
+      - 需要平行趋势假设
+
+      **多重稳健性检验** (应对审稿人):
+      1. E-value分析: 未测混杂需要多强才能推翻结果？
+      2. 负对照: 选一个理论上不该有因果的outcome测试
+      3. Placebo test: 在干预前期不应该有效应
+      4. 敏感性分析矩阵: 不同假设下的结果稳健性
+
+      **NEJM审稿重点**:
+      - 临床意义 > 统计显著性
+      - 可重复性和透明度
+      - 对政策/临床实践的影响
+
+      **Differentiation策略**:
+      - 不做general的"social media → depression"
+      - Focus on mechanism: 如sleep mediation, FOMO pathway
+      - 或特定vulnerable群体
+
+      **预期审稿人质疑**:
+      Q: "为什么不做RCT？"
+      A: Ethical + feasibility → 准实验是次优选择
+
+      Q: "如何排除反向因果？"
+      A: Target trial + 时序性证据 + sensitivity analysis
+
+      您想深入讨论哪个部分？我们可以构建完整的analysis plan。
+
+# ============================================================================
+# 性能监控
+# ============================================================================
+
+performance_metrics:
+
+  routing_accuracy:
+    metric: "路由决策与用户满意度的匹配"
+    target: "> 85%"
+    measurement: "用户反馈或隐式信号"
+
+  complexity_prediction_accuracy:
+    metric: "复杂度评分与实际难度的相关性"
+    target: "Correlation > 0.75"
+    measurement: "response_length, interaction_turns作为proxy"
+
+  mode_distribution:
+    healthy_range:
+      quick_guidance: "20-30%"
+      mentor_lite: "15-25%"
+      standard_mentor: "30-40%"
+      deep_mentorship: "10-20%"
+      strategic_advisor: "5-10%"
+
+    alerts:
+      if_quick_guidance_gt_40: "可能过度简化复杂问题"
+      if_deep_mentorship_gt_30: "可能过度复杂化简单问题"
+
+# ============================================================================
+# 未来增强 (V2.5+)
+# ============================================================================
+
+future_enhancements:
+
+  adaptive_complexity_threshold:
+    description: "根据用户历史动态调整复杂度阈值"
+    example: "如果用户连续正确处理0.7复杂度问题，将medium_complexity上限从0.7提升到0.75"
+
+  neural_routing:
+    description: "从历史 (complexity, user_level, mode, satisfaction) 学习最优路由"
+    method: "Pattern learning类似Claude-Flow"
+
+  multi_agent_routing:
+    description: "对于very_complex问题，路由到多个specialist agents协作"
+    condition: "complexity > 0.9 且 涉及多个领域"

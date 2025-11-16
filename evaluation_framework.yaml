@@ -1,0 +1,567 @@
+# Evaluation Framework - ACS-Mentor V2.1
+# 量化评估体系：对标Claude-Flow的可观测性设计
+
+# ============================================================================
+# 设计哲学
+# ============================================================================
+
+philosophy: |
+  Claude-Flow教训：量化一切，数据驱动优化
+  - SWE-Bench解决率: 84.8%
+  - Token减少率: 32.3%
+  - 速度提升: 2.8-4.4x
+
+  ACS-Mentor目标：建立学术指导的评估基准
+  - Error detection准确率
+  - Guidance adoption率
+  - User capability growth
+
+version: "2.1.0"
+design_date: "2025-11-16"
+
+# ============================================================================
+# Evaluation Metrics - 评估指标体系
+# ============================================================================
+
+evaluation_metrics:
+
+  # ========== Category 1: Effectiveness (有效性) ==========
+
+  effectiveness_metrics:
+
+    error_detection_rate:
+      definition: "系统检测到的方法学错误 / 真实存在的错误"
+      formula: "Detected Errors / Total Actual Errors"
+      target: "> 90%"
+      measurement_method: |
+        使用benchmark_methodological_errors数据集：
+        - 100个标注的错误案例
+        - 每个案例标注了error_type, severity
+        - 测试系统是否检测到
+
+      data_source: "benchmark_datasets.methodological_errors"
+
+      sub_metrics:
+        precision: "检测为错误的样本中真正是错误的比例"
+        recall: "所有真实错误中被检测到的比例"
+        f1_score: "precision和recall的调和平均"
+
+      severity_breakdown:
+        critical_errors_detection: "> 95%"
+        moderate_errors_detection: "> 85%"
+        minor_errors_detection: "> 75%"
+
+      alert_conditions:
+        - if: "error_detection_rate < 0.85"
+          action: "检查error_detection算法是否失效"
+
+    guidance_acceptance_rate:
+      definition: "用户采纳建议的比例"
+      formula: "Accepted Guidance / Total Guidance Provided"
+      target: "> 70%"
+      measurement_method: |
+        通过以下信号推断：
+        1. 显式: 用户回复"好的"、"明白了"、"我会这样做"
+        2. 隐式: 后续对话中应用了建议
+        3. 跟踪: 在后续交互中未再犯同样错误
+
+      proxy_signals:
+        explicit_acknowledgment: ["好的", "明白", "谢谢", "会采纳", "got it", "thanks"]
+        implicit_application: "后续消息中出现建议的方法/工具"
+        error_elimination: "同类错误30天内未再出现"
+
+      data_source: "user_interactions table + session_history"
+
+    user_capability_growth:
+      definition: "用户技能提升速度"
+      formula: "Skill Advancements / Time Period"
+      target: "平均每月至少1次skill晋级"
+      measurement_method: |
+        从skill_progress表统计：
+        - 统计用户在各skill_domain的晋级频率
+        - 计算从novice→intermediate→advanced的时间
+
+      dimensions:
+        average_advancement_interval: "平均多少天晋级一次"
+        skill_coverage: "用户在多少个skill_domain有进展"
+        growth_velocity: "技能分数增长速度 (Δscore / Δtime)"
+
+      data_source: "skill_progress table"
+
+      healthy_benchmarks:
+        active_learner: "< 20天/次晋级"
+        moderate_learner: "20-45天/次晋级"
+        slow_learner: "> 45天/次晋级"
+
+  # ========== Category 2: Efficiency (效率性) ==========
+
+  efficiency_metrics:
+
+    response_relevance:
+      definition: "响应与用户问题的相关性"
+      formula: "Semantic Similarity(user_message, guidance_response)"
+      target: "> 0.85"
+      measurement_method: |
+        方法1: 语义相似度 (使用embeddings)
+        方法2: 关键词重叠度
+        方法3: 人工评分 (抽样)
+
+      implementation: |
+        def calculate_response_relevance(user_message, guidance_response):
+            # 使用sentence-transformers
+            user_emb = model.encode(user_message)
+            response_emb = model.encode(guidance_response)
+
+            similarity = cosine_similarity(user_emb, response_emb)
+            return similarity
+
+      data_source: "user_interactions table"
+
+      alert_conditions:
+        - if: "relevance < 0.75"
+          action: "标记为低质量响应，分析原因"
+
+    context_efficiency:
+      definition: "响应的信息密度（避免冗余）"
+      formula: "Unique Information / Total Length"
+      target: "避免冗余，每句话有价值"
+      measurement_method: |
+        信息熵分析:
+        1. 检测重复句子或段落
+        2. 计算新信息量
+        3. 测量冗余度
+
+      proxy_metrics:
+        repetition_rate: "重复内容占比（应 < 10%）"
+        sentence_diversity: "句子级别的多样性"
+        information_entropy: "信息熵分数"
+
+      data_source: "guidance_response text analysis"
+
+    retrieval_speed:
+      definition: "内存系统检索延迟"
+      formula: "P95 latency of semantic search"
+      target: "< 100ms (P95)"
+      measurement_method: |
+        记录每次semantic_search的耗时
+        - ChromaDB查询时间
+        - SQLite fallback时间
+
+      data_source: "memory system logs"
+
+      alert_conditions:
+        - if: "p95_latency > 200ms"
+          action: "检查ChromaDB健康状态或重建索引"
+
+  # ========== Category 3: User Experience (用户体验) ==========
+
+  user_experience_metrics:
+
+    mode_switching_accuracy:
+      definition: "模式选择与用户期望的匹配度"
+      formula: "Correctly Matched Modes / Total Sessions"
+      target: "> 80%"
+      measurement_method: |
+        推断方式：
+        - 如果用户在Critic模式后满意→匹配正确
+        - 如果用户说"不需要这么详细"→可能over-mentoring
+        - 如果用户说"能详细解释吗"→可能under-mentoring
+
+      proxy_signals:
+        over_criticism: ["太严格", "只是想确认", "too harsh"]
+        under_criticism: ["有错误你怎么没指出", "should have warned"]
+        over_mentoring: ["不需要这么详细", "我知道基础", "too basic"]
+        under_mentoring: ["能详细解释吗", "不太理解", "explain more"]
+
+      data_source: "user feedback + session_history"
+
+    learning_satisfaction:
+      definition: "用户对指导质量的满意度"
+      formula: "Average User Satisfaction Score"
+      target: "> 4.0 / 5.0"
+      measurement_method: |
+        两种收集方式：
+        1. 显式: 会话后问卷 (1-5分)
+        2. 隐式: 从用户反馈推断
+           - 正向信号: "很有帮助"、"清楚了"、"👍"
+           - 负向信号: "还是不明白"、"太复杂了"
+
+      implicit_scoring:
+        positive_signals:
+          keywords: ["有帮助", "清楚", "明白", "谢谢", "helpful", "clear"]
+          score: 5.0
+
+        neutral_signals:
+          keywords: ["好的", "知道了", "ok", "got it"]
+          score: 3.5
+
+        negative_signals:
+          keywords: ["不明白", "太复杂", "confused", "too complex"]
+          score: 2.0
+
+      data_source: "user_interactions.user_satisfaction + text analysis"
+
+    recurring_error_elimination_rate:
+      definition: "重复错误被成功纠正（不再出现）的比例"
+      formula: "Eliminated Recurring Errors / Total Recurring Errors Detected"
+      target: "> 60%"
+      measurement_method: |
+        追踪逻辑：
+        1. 检测到recurring_error (count >= 2)
+        2. 提供深度指导 (deep_mentorship)
+        3. 追踪后续30天内是否再次出现
+
+        如果30天内未再出现 → eliminated
+        如果仍然出现 → not_eliminated
+
+      data_source: "error_tracking table"
+
+      alert_conditions:
+        - if: "elimination_rate < 0.50"
+          action: "深度指导策略可能无效，需要改进teaching_strategies"
+
+  # ========== Category 4: System Quality (系统质量) ==========
+
+  system_quality_metrics:
+
+    guidance_quality_score:
+      definition: "自动质量检查的平均分数"
+      formula: "Average of quality_score across all sessions"
+      target: "> 0.80"
+      measurement_method: |
+        使用 evaluate_guidance_quality() 函数
+        7个维度的自动检查，见decision_logic_v2_extension.md
+
+      distribution_target:
+        excellent: "> 15% (quality >= 0.85)"
+        good: "50-65% (0.75 <= quality < 0.85)"
+        acceptable: "20-30% (0.65 <= quality < 0.75)"
+        poor: "< 5% (quality < 0.65)"
+
+      data_source: "user_interactions.quality_score"
+
+      alert_conditions:
+        - if: "average_quality < 0.75"
+          action: "系统性质量下降，检查generation逻辑"
+        - if: "poor_rate > 0.10"
+          action: "低质量响应过多，需要改进"
+
+    high_quality_case_storage_rate:
+      definition: "高质量案例存储占比"
+      formula: "Quality >= 0.85 cases / Total cases"
+      target: "15-25%"
+      measurement_method: |
+        统计存入guidance_cases collection的案例占比
+
+      data_source: "guidance_cases collection metadata"
+
+      interpretation:
+        too_low: "< 10% → 质量标准可能过高，或系统质量不足"
+        healthy: "15-25% → 合理范围"
+        too_high: "> 30% → 质量标准可能过低，稀释最佳实践库"
+
+    memory_system_health:
+      definition: "内存系统的可用性和性能"
+      components:
+        chromadb_availability:
+          target: "> 99%"
+          measurement: "health_check success rate"
+
+        sqlite_availability:
+          target: "> 99.5%"
+          measurement: "health_check success rate"
+
+        retrieval_latency_p95:
+          target: "< 100ms"
+          measurement: "semantic search timing"
+
+        memory_growth_rate:
+          target: "< 10MB/week"
+          alert_threshold: "> 50MB/week"
+          measurement: "database size monitoring"
+
+      data_source: "health_check logs + database size"
+
+# ============================================================================
+# Benchmark Datasets - 基准测试数据集
+# ============================================================================
+
+benchmark_datasets:
+
+  methodological_errors:
+    name: "methodological_errors_100"
+    description: "100个典型方法学错误案例"
+    size: 100
+    source: "从顶级期刊审稿报告提取"
+
+    structure:
+      - case_id: "ME_001"
+        user_message: "我的RCT研究有30%的dropout，我把他们都exclude了，然后分析剩下的数据。"
+        expected_error_detection:
+          error_type: "ITT_violation"
+          error_category: "methodological"
+          error_severity: "critical"
+        expected_guidance_points:
+          - "应该使用Intention-to-Treat分析"
+          - "Complete case analysis会导致选择偏倚"
+          - "建议: Multiple imputation处理缺失"
+
+      - case_id: "ME_002"
+        user_message: "我做了10个亚组分析，有3个p<0.05，我重点报告这3个。"
+        expected_error_detection:
+          error_type: "multiple_testing_no_correction"
+          error_category: "statistical"
+          error_severity: "critical"
+        expected_guidance_points:
+          - "多重比较必须校正（Bonferroni或FDR）"
+          - "选择性报告是p-hacking"
+          - "应该pre-specify subgroups"
+
+      # ... 更多案例
+
+    usage: "测试error_detection_rate"
+
+    metrics:
+      error_detection_precision: "检测为错误的样本中真实错误的比例"
+      error_detection_recall: "所有真实错误中被检测到的比例"
+      guidance_quality: "生成的guidance是否包含expected_guidance_points"
+
+  novice_questions:
+    name: "novice_questions_50"
+    description: "50个新手常见问题"
+    size: 50
+    source: "统计咨询记录、教学经验"
+
+    structure:
+      - case_id: "NQ_001"
+        user_level: "novice"
+        user_message: "p值是什么意思？"
+        expected_complexity_score: [0.1, 0.3]
+        expected_mode: "quick_guidance"
+        expected_style: "1-2句话定义"
+
+      - case_id: "NQ_002"
+        user_level: "novice"
+        user_message: "我不知道应该用t检验还是卡方检验，我的数据是..."
+        expected_complexity_score: [0.3, 0.5]
+        expected_mode: "mentor_lite"
+        expected_style: "判断逻辑 + 1个例子"
+
+      # ... 更多案例
+
+    usage: "测试mentor_mode有效性和complexity_scoring准确性"
+
+    metrics:
+      complexity_prediction_accuracy: "预测复杂度与expected_score的偏差"
+      mode_routing_accuracy: "选择的mode是否匹配expected_mode"
+      response_appropriateness: "响应是否符合novice水平"
+
+  strategic_scenarios:
+    name: "strategic_scenarios_30"
+    description: "30个战略决策场景"
+    size: 30
+    source: "职业发展案例、研究规划咨询"
+
+    structure:
+      - case_id: "SS_001"
+        user_level: "advanced"
+        user_message: "我想做social media与抑郁的研究，但RCT不可行，目标是NEJM level，应该如何设计因果推断策略？"
+        expected_complexity_score: [0.7, 0.9]
+        expected_mode: "strategic_advisor"
+        expected_strategic_elements:
+          - "多个方案的tradeoffs分析"
+          - "对标top-tier期刊标准"
+          - "创新性和影响力评估"
+
+      # ... 更多案例
+
+    usage: "测试strategic_advisor质量"
+
+    metrics:
+      strategic_depth: "是否提供high-level thinking而非手把手教学"
+      tradeoffs_analysis: "是否分析多个方案的优劣"
+      impact_consideration: "是否考虑研究影响力"
+
+  recurring_error_scenarios:
+    name: "recurring_error_scenarios_20"
+    description: "20个重复错误处理场景"
+    size: 20
+
+    structure:
+      - case_id: "RE_001"
+        user_id: "test_user_recurring_001"
+        scenario:
+          - turn_1:
+              user_message: "我的模型AUC=0.85，很好了吧？"
+              system_response: "提示需要external validation"
+              error_detected: "validation_missing"
+
+          - turn_2:
+              user_message: "我建了另一个模型，AUC=0.88"
+              system_response: "再次提示validation，且标记为recurring_error"
+              expected_behavior:
+                - "检测到recurring_error (count=2)"
+                - "升级为deep_mentorship模式"
+                - "提供概念框架（为什么validation重要）"
+
+          - turn_3_followup:
+              time_window: "30天后"
+              user_message: "我的新模型在external dataset上测试了"
+              expected_tracking: "recurring_error eliminated"
+
+    usage: "测试recurring_error_elimination_rate"
+
+# ============================================================================
+# Continuous Evaluation - 持续评估
+# ============================================================================
+
+continuous_evaluation:
+
+  frequency: "每周运行"
+
+  automated_tests:
+    benchmark_tests:
+      schedule: "每周日 02:00"
+      datasets:
+        - "methodological_errors_100"
+        - "novice_questions_50"
+        - "strategic_scenarios_30"
+
+      workflow: |
+        1. 在每个dataset上运行系统
+        2. 记录各项metrics
+        3. 与target对比
+        4. 生成weekly_report
+
+      output:
+        - "weekly_evaluation_report.json"
+        - "metrics_trend_chart.png"
+
+    regression_detection:
+      description: "检测性能退化"
+      logic: |
+        if current_week_metric < previous_week_metric * 0.95:
+          alert("Regression detected in {metric}")
+
+      tracked_metrics:
+        - "error_detection_rate"
+        - "guidance_quality_score"
+        - "retrieval_latency_p95"
+
+  human_review:
+    frequency: "每月"
+    sample_size: 20
+
+    procedure: |
+      1. 随机抽取20个真实对话
+      2. 专家评分 (1-5分)
+        - Error detection准确性
+        - Guidance有效性
+        - 响应适当性
+
+      3. 与自动quality_score对比
+      4. 校准自动评估标准
+
+    inter_rater_reliability: "> 0.75 (Cohen's Kappa)"
+
+# ============================================================================
+# Reporting & Dashboards - 报告与仪表盘
+# ============================================================================
+
+reporting:
+
+  weekly_report:
+    format: "Markdown + JSON"
+
+    sections:
+      - summary_metrics:
+          - error_detection_rate
+          - guidance_acceptance_rate
+          - average_quality_score
+          - user_growth_this_week
+
+      - performance_trends:
+          - "与上周对比"
+          - "与月度平均对比"
+
+      - alerts:
+          - "低于target的metrics"
+          - "性能退化警告"
+
+      - recommendations:
+          - "基于数据的改进建议"
+
+  monthly_deep_dive:
+    format: "Comprehensive analysis report"
+
+    sections:
+      - user_growth_analysis:
+          - "skill_progression heatmap"
+          - "用户分层统计（novice/intermediate/advanced）"
+
+      - content_analysis:
+          - "最常见的error_types"
+          - "最有效的guidance_strategies"
+          - "high-quality cases分类"
+
+      - system_optimization:
+          - "Memory system性能优化建议"
+          - "Routing规则调整建议"
+
+  dashboard_metrics:
+    realtime_display:
+      - "当前week的error_detection_rate"
+      - "最近24小时的guidance_quality"
+      - "Memory system health status"
+
+    historical_trends:
+      - "过去12周的metrics趋势图"
+      - "用户成长轨迹可视化"
+
+# ============================================================================
+# Comparison with Claude-Flow - 与Claude-Flow对标
+# ============================================================================
+
+claude_flow_benchmarking:
+
+  their_metrics:
+    swe_bench_resolution: 0.848
+    token_reduction: 0.323
+    speed_improvement: "2.8-4.4x"
+    vector_search_speedup: "96-164x"
+
+  our_equivalent_metrics:
+    methodological_error_resolution: "error_detection_rate (target > 0.90)"
+    guidance_efficiency: "context_efficiency + response_relevance"
+    user_capability_acceleration: "skill_advancement_rate"
+    retrieval_performance: "retrieval_latency_p95 < 100ms"
+
+  aspirational_targets:
+    - "Error detection准确率: > 90% (相当于SWE-Bench 84.8%)"
+    - "Guidance采纳率: > 70% (相当于solution effectiveness)"
+    - "内存检索速度: < 100ms P95 (对标AgentDB性能)"
+    - "用户成长速度: 月均1次晋级 (对标学习加速)"
+
+# ============================================================================
+# Future Enhancements (V2.5+)
+# ============================================================================
+
+future_enhancements:
+
+  ab_testing:
+    description: "A/B测试不同策略的有效性"
+    examples:
+      - "测试不同的质量阈值（0.80 vs 0.85）"
+      - "测试不同的routing规则"
+      - "测试不同的response_style"
+
+  predictive_analytics:
+    description: "预测用户成长轨迹和潜在困难"
+    method: "基于历史数据训练模型"
+
+  automated_optimization:
+    description: "根据评估结果自动调整系统参数"
+    examples:
+      - "动态调整decision_factor_weights"
+      - "优化complexity_threshold"
+      - "调整quality_threshold"
