@@ -1,4 +1,202 @@
-# CHANGELOG - ACS蜂巢V1.2优化版
+# CHANGELOG - ACS系统更新日志
+
+## Version 2.0 - ACS-Mentor (2025-11-13)
+
+### 🎯 重大升级：从审稿专家到科研导师
+
+**核心愿景**: 从批判到建设，从纠错到育人
+
+本版本实现了从**ACS-Hive**(审稿专家)到**ACS-Mentor**(科研导师)的系统性升级，在保留V1.2.1所有审稿能力的基础上，新增三大核心模块。
+
+---
+
+### 三大核心扩展
+
+**1. 智能写作导师 (Writing Mentor)** 📝
+- **研究全周期支持**: Ideation → Design → Analysis → Writing
+- **研究设计决策树**: 因果推断/预测/描述性研究的设计指导
+- **统计方法顾问**: 基于outcome类型的方法选择建议
+- **可视化原则**: 图表设计best practices
+- **Discussion框架**: 4段式结构化写作指导
+- **配置文件**: `writing_guidance.yaml` (650行)
+
+**2. 战略思维顾问 (Strategic Advisor)** 🎯
+- **研究前沿识别**: 追踪新兴方法和热点话题
+- **Gap识别框架**: 方法学gap/实证gap/理论gap
+- **创新性评估**: 4维度评估(概念/方法/实证/应用)
+- **影响力预测模型**: 基于问题重要性/方法严谨性/创新性/可行性
+- **长期研究规划**: 职业阶段策略和研究组合平衡
+- **配置文件**: `strategic_thinking.yaml` (600行)
+
+**3. 能力发展系统 (Capability Developer)** 📈
+- **批判性思维培养**: 从novice → intermediate → advanced
+- **研究独立性训练**: Guided → Semi-independent → Fully independent
+- **技能树系统**: 4大领域的系统化技能发展
+- **错误模式追踪**: Recurring pattern检测与消除
+- **长期成长追踪**: 跨会话能力评估和里程碑庆祝
+- **配置文件**: `mentorship_goals.yaml` (550行)
+
+---
+
+### 架构创新
+
+**1. 双模式系统**
+
+```
+Critic Mode (批判模式)      ←→     Mentor Mode (导师模式)
+    ↓                                    ↓
+检测错误、纠正问题                   引导思考、启发创新
+强制规范、确保质量                   提供建议、培养能力
+基于beliefs.yaml                    基于mentorship.yaml
+```
+
+**Hybrid Mode**: 无缝过渡"纠错→教学→资源"
+
+**2. 8因子决策框架**
+
+扩展自V1.2.1的6因子系统：
+
+| 因子 | 权重 | 模式 | 描述 |
+|------|------|------|------|
+| error_detection | 0.9 | Critic | 方法学错误检测 |
+| goal_threatened | 0.8 | Critic | 核心目标受威胁 |
+| agenda_opportunity | 0.75 | Critic | 议程推进机会 |
+| misrepresented | 0.7 | Critic | 观点被误解 |
+| expertise_match | 0.6 | Both | 专业领域匹配 |
+| silence_too_long | 0.4 | Both | 沉默过久 |
+| **growth_opportunity** | **0.70** | **Mentor** | **成长机会** ⭐NEW |
+| **strategic_insight** | **0.65** | **Mentor** | **战略洞察** ⭐NEW |
+
+**3. 智能模式切换**
+
+```python
+if critic_score >= 1.5 and mentor_score >= 0.6:
+    → Hybrid Mode (先纠错，后教学)
+elif critic_score >= 1.5:
+    → Critic Mode (纯批判)
+elif mentor_score >= 1.2:
+    → Mentor Mode (纯指导)
+else:
+    → Balanced Mode (根据情况)
+```
+
+---
+
+### 核心文件清单
+
+**新增配置文件** (4个):
+1. **writing_guidance.yaml** (650行)
+   - 4个写作阶段完整指导
+   - 统计方法advisor
+   - 可视化principles
+   - Discussion framework
+
+2. **strategic_thinking.yaml** (600行)
+   - 前沿方法追踪
+   - Gap识别工具箱
+   - 创新性评估框架
+   - 职业规划策略
+
+3. **mentorship_goals.yaml** (550行)
+   - 5个导师级目标
+   - 技能树定义
+   - 错误模式追踪
+   - 用户能力profiling
+
+4. **decision_logic_v2_extension.md** (450行)
+   - Factor 7-8检测算法
+   - 8因子urgency计算
+   - 模式选择逻辑
+   - Hybrid模式设计
+   - 完整决策示例
+
+**修改的文件** (1个):
+- **beliefs.yaml**
+  - 新增Factor 7-8权重定义
+  - 新增mode_specific_weights配置
+  - 扩展weight_adjustments支持V2.0
+
+**设计文档** (1个):
+- **ACS-MENTOR_V2.0_ARCHITECTURE.md** (1,626行)
+  - 完整架构设计
+  - 详细配置示例
+  - 实施路线图
+  - 最佳实践建议
+
+---
+
+### 技术指标
+
+**代码量**:
+- 新增配置: ~2,250行 (4个YAML文件)
+- 新增文档: ~2,100行 (2个MD文件)
+- 修改文件: ~40行 (beliefs.yaml扩展)
+- **总计**: ~4,400行新内容
+
+**兼容性**:
+- ✅ 100%向后兼容V1.2.1
+- ✅ 保留所有V1.2.1审稿功能
+- ✅ 新功能可选启用
+- ✅ 渐进式部署支持
+
+---
+
+### 预期效果
+
+**定量目标**:
+- 用户满意度: 0.80 → 0.90
+- 问题解决率: 90% → 95%
+- 长期留存率: N/A → 0.85
+- 能力提升速度: N/A → 每月+10%
+
+**定性改进**:
+- 不只指出错误，还教会为什么
+- 帮助建立系统的科研思维
+- 像真正的导师，而非仅审稿人
+- 支持长期能力发展
+
+---
+
+### 实施建议
+
+**Phase 1**: 基础配置 (立即可用)
+- ✅ 8因子决策框架
+- ✅ 配置文件骨架
+
+**Phase 2**: Writing Mentor (优先)
+- 研究设计咨询
+- 统计方法选择
+- 写作框架指导
+
+**Phase 3**: Strategic Advisor
+- 创新性评估
+- 影响力预测
+- 研究规划
+
+**Phase 4**: Capability Developer
+- 能力追踪
+- 学习路径
+- 成长监控
+
+---
+
+### 设计原则
+
+1. **兼容性优先**: 完全保留V1.2.1能力
+2. **模块化设计**: 新功能独立可选
+3. **上下文感知**: 智能识别用户需求
+4. **长期主义**: 支持跨会话追踪
+5. **可解释性**: 所有建议有理论依据
+
+---
+
+### 参考文档
+
+- 完整架构: `ACS-MENTOR_V2.0_ARCHITECTURE.md`
+- 决策逻辑: `decision_logic_v2_extension.md`
+- 配置示例: `writing_guidance.yaml`, `strategic_thinking.yaml`, `mentorship_goals.yaml`
+
+---
 
 ## Version 1.2.1-Optimized (2025-11-13)
 

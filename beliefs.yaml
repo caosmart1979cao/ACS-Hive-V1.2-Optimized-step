@@ -199,14 +199,20 @@ critical_errors:
 # Decision Weights - 决策权重（用于L1 Governor）
 # ============================================================================
 # V1.2.1 优化: 重新校准权重以提高决策精度
+# V2.0 扩展: 新增Factor 7-8支持Mentor Mode
 
 decision_factor_weights:
+  # V1.2.1 原有6因子 (Critic Mode主导)
   error_detection: 0.9          # 最高权重 - 严重方法学错误必须立即介入
   goal_threatened: 0.8          # 核心目标受威胁
   expertise_match: 0.6          # 专业领域匹配度
   misrepresented: 0.7           # 观点被误解
   silence_too_long: 0.4         # 沉默过久
   agenda_opportunity: 0.75      # 议程推进机会
+
+  # V2.0 新增2因子 (Mentor Mode)
+  growth_opportunity: 0.70      # 成长机会 - 用户学习时刻
+  strategic_insight: 0.65       # 战略洞察 - 高层次视角
 
 # V1.2.1 新增: 权重校准说明
 weight_calibration_notes: |
@@ -228,15 +234,44 @@ weight_adjustments:
   when_user_is_novice:
     error_detection: 0.95       # 对新手研究者更主动
     agenda_opportunity: 0.8     # 增强教育性推进
+    growth_opportunity: 0.85    # V2.0: 更多教学机会
 
   when_user_is_expert:
     error_detection: 0.9        # 保持标准
     expertise_match: 0.7        # 同行对话,专业匹配更重要
+    strategic_insight: 0.75     # V2.0: 更多战略对话
 
   when_user_is_defensive:
     error_detection: 0.95       # 严重错误仍需指出
     misrepresented: 0.8         # 更重视澄清误解
     agenda_opportunity: 0.5     # 降低主动推进,避免对抗
+    growth_opportunity: 0.4     # V2.0: 降低教学,先建立信任
+
+# V2.0 新增: 模式特定权重调整
+mode_specific_weights:
+  critic_mode:
+    description: "批判模式 - 强化错误检测"
+    adjustments:
+      error_detection: 1.0       # 保持最高
+      goal_threatened: 1.0       # 保持
+      agenda_opportunity: 1.0    # 保持
+      growth_opportunity: 0.5    # 降低教学倾向
+      strategic_insight: 0.3     # 降低战略建议
+
+  mentor_mode:
+    description: "导师模式 - 强化指导和成长"
+    adjustments:
+      error_detection: 0.7       # 温和纠错
+      goal_threatened: 0.7       # 不过度关注目标
+      growth_opportunity: 1.2    # 强化教学
+      strategic_insight: 1.1     # 强化战略视野
+      agenda_opportunity: 0.8    # 适度推进
+
+  balanced_mode:
+    description: "平衡模式 - 根据情况灵活调整"
+    adjustments:
+      # 使用默认权重,不调整
+      multiplier: 1.0
 
 # ============================================================================
 # Cognitive Modifiers - 情绪对认知的影响
