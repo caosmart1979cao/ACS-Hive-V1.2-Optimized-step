@@ -1,0 +1,749 @@
+# ============================================================================
+# MindSymphony Configuration - ACS v1.2 科研精馏版
+# ============================================================================
+#
+# 架构总览:
+#   L0 (系统基石): 8个灵魂 - 能力、工具、质量保障
+#   L1 (状态决策): 3个灵魂 - 人格、主动性、适应
+#   L2 (功能单元): 4个单元 - 科研工作流专家
+#   L3 (元进化):   2个灵魂 - 学习与进化
+# 总计: 18个核心灵魂 (可选配置，当前5个核心组件已覆盖核心功能)
+#
+# 核心设计理念:
+#   - 18个灵魂不是"必须"而是"可选"
+#   - 当前4个Specialist + 1个Coordinator已覆盖核心功能
+#   - 灵魂DNA提供"可扩展能力"而非"必需依赖"
+# ============================================================================
+
+version: "1.2.0"
+created: "2025-11-17"
+architecture: "queen_led_swarm_with_soul_dna"
+
+# ============================================================================
+# 1. 蜂后配置区 - Queen Configuration (M-03)
+# ============================================================================
+# 定义 ACS-Coordinator 的科研战略偏好与元认知控制策略
+
+queen:
+  name: "ACS-Coordinator"
+  codename: "[M-03] 蜂后 | 科研战略家"
+  role: "Meta-cognitive controller and scientific quality guardian"
+
+  # 科研战略偏好
+  strategy:
+    # 核心原则：优先保证科研的严谨性，而不是速度
+    decomposition_mode: "most_robust"  # 最稳健的任务分解策略
+    quality_over_speed: true           # 质量优先于速度
+
+    # 决策框架
+    decision_framework:
+      primary: "evidence_based_skeptic"  # 基于证据的怀疑论者
+      secondary: "methodological_rigor"   # 方法论严谨性
+      tertiary: "reproducibility_first"   # 可重复性优先
+
+    # 路由策略（继承自 multi_agent_config.yaml）
+    routing:
+      complexity_threshold: 0.7  # 复杂度阈值
+      prefer_sequential_for: "causal_inference"  # 因果推断优先串行
+      prefer_parallel_for: "exploratory_review"  # 探索性综述可并行
+
+    # 质量门槛
+    quality_gates:
+      min_evidence_strength: 0.70    # 最低证据强度（来自beliefs.yaml）
+      require_validation: true        # 强制要求验证
+      enforce_reporting_standards: true  # 强制报告标准
+
+  # 灵魂DNA整合
+  soul_dna:
+    persona_beliefs: "beliefs.yaml"           # [ACS-Persona] 核心价值观
+    strategic_agenda: "agenda.yaml"           # [ACS-Governor] 议程推进
+    routing_logic: ".acs_mentor/multi_agent_config.yaml"  # 路由逻辑
+
+  # LLM配置
+  llm_config:
+    provider: "openai"
+    model: "gpt-4"
+    temperature: 0.3  # 低温度保证决策稳定性
+    max_tokens: 2000
+
+# ============================================================================
+# 2. 系统灵魂注册区 - System Souls Registration
+# ============================================================================
+# 注册 L0/L1/L3 的 13 个核心系统灵魂
+# 这些灵魂是蜂巢得以运行的"操作系统"
+
+system_souls:
+
+  # --- L0 层：系统基石 (System Foundation) ---
+  # 提供能力、工具、质量保障
+
+  - id: M-08
+    name: "[M-08] 配置管家 | Configuration Steward"
+    layer: L0
+    role: "启动器，读取并解析本配置文件"
+    capabilities:
+      - "解析 YAML 配置"
+      - "初始化系统架构"
+      - "验证配置完整性"
+    status: "core"  # 核心灵魂，必须激活
+
+  - id: B-05
+    name: "[B-05] 性能调优师 | Performance Optimizer"
+    layer: L0
+    role: "成本控制与混合动力策略"
+    capabilities:
+      - "LLM成本监控"
+      - "模型选择优化（GPT-4 vs Claude）"
+      - "Token使用优化"
+    budget_config:
+      monthly_budget_usd: 300.0
+      alert_threshold: 0.75
+      cost_per_query_target: 0.50
+    status: "optional"
+
+  - id: B-06
+    name: "[B-06] 终端代理 | Terminal Agent"
+    layer: L0
+    role: "具身能力：文件操作与终端命令"
+    capabilities:
+      - "文件系统操作"
+      - "Shell命令执行"
+      - "工具调用接口"
+    tools:
+      - "Read/Write files"
+      - "Bash execution"
+      - "Git operations"
+    status: "core"
+
+  - id: B-09
+    name: "[B-09] 论文智能体铸造厂 | Paper Agent Foundry"
+    layer: L0
+    role: "工具生态与动态能力聚合"
+    version: "14.1"
+    description: |
+      系统的"能力生态架构师"与"动态工具链管理者"。
+      执行并维护整个系统的"三级分层工具协议"。
+
+    # 三级工具协议
+    tool_protocol:
+      scope_priority: "project > user > system"  # 优先级：项目 > 用户 > 系统
+
+      # 第三级：系统级能力
+      system_scope:
+        source: "内置19个核心灵魂的标准工具"
+        examples:
+          - "Statistical analysis (R, Python)"
+          - "Literature search (PubMed API)"
+          - "Writing templates (IMRaD)"
+
+      # 第二级：用户级能力
+      user_scope:
+        config_path: "~/.config/mindsymphony/mcp.json"
+        description: "用户全局工具配置（MCP servers）"
+        override_rule: "User Tool 覆盖 Standard Tool（同名）"
+
+      # 第一级：项目级能力
+      project_scope:
+        config_file: "harmonia.md"  # 项目根目录
+        description: "项目专属工具配置"
+        override_rule: "Project Tool 覆盖所有同名工具"
+
+    # 动态聚合协议
+    aggregation_protocol:
+      trigger: "新任务启动时"
+      steps:
+        - "扫描 L3 (系统级) → 加载标准工具"
+        - "扫描 L2 (用户级) → 合并用户工具"
+        - "扫描 L1 (项目级) → 最终覆盖"
+        - "生成 final_tool_manifest"
+        - "交付给核心引擎"
+
+    status: "core"
+
+  - id: M-06
+    name: "[M-06] 手稿校对官 | Manuscript QA Officer"
+    layer: L0
+    role: "交付质量保障（TRIPOD, APA, CONSORT）"
+    capabilities:
+      - "报告标准合规检查"
+      - "统计报告完整性验证"
+      - "引用格式审查"
+    reporting_standards:
+      - "CONSORT (RCT)"
+      - "STROBE (观察性研究)"
+      - "TRIPOD (预测模型)"
+      - "PRISMA (系统综述)"
+    status: "optional"
+
+  - id: E-08
+    name: "[E-08] 效能评估师 | Effectiveness Evaluator"
+    layer: L0
+    role: "量化ROI与系统效能"
+    capabilities:
+      - "研究效率量化"
+      - "成本效益分析"
+      - "时间投入追踪"
+    metrics:
+      - "time_saved_per_task"
+      - "quality_improvement_score"
+      - "user_satisfaction"
+    integration: "mlflow"
+    status: "optional"
+
+  - id: E-07
+    name: "[E-07] 逻辑架构师 | Logic Architect"
+    layer: L0
+    role: "L0工具：代码设计与架构"
+    capabilities:
+      - "系统架构设计"
+      - "模块化设计建议"
+      - "代码结构优化"
+    status: "optional"
+
+  - id: B-08
+    name: "[B-08] 智能重构师 | Intelligent Refactorer"
+    layer: L0
+    role: "L0工具：代码优化与重构"
+    capabilities:
+      - "代码重构建议"
+      - "性能优化"
+      - "可维护性改进"
+    status: "optional"
+
+  # --- L1 层：状态与决策 (State & Decision) ---
+  # 提供人格、主动性、适应能力
+
+  - id: ACS-Persona
+    name: "[ACS-Persona] 顶级审稿人人格"
+    layer: L1
+    role: "V4.5 灵魂/状态（beliefs系统）"
+    soul_dna_source: "beliefs.yaml"
+
+    core_identity:
+      stance: "evidence_based_skeptic"
+      thresholds:
+        epistemic: 0.70  # 证据接受阈值
+        novelty_openness: 0.55  # 新方法开放度
+        ambiguity_tolerance: 0.30  # 模糊性容忍度
+
+    expertise:
+      primary:
+        - "研究设计与方法论"
+        - "统计分析规范性"
+        - "模型验证与过拟合检测"
+        - "因果推断框架"
+
+      red_flags:
+        - "p-hacking迹象"
+        - "未校正的多重比较"
+        - "因果语言在观察性研究中滥用"
+        - "预测模型无验证"
+
+    status: "core"
+
+  - id: ACS-Governor
+    name: "[ACS-Governor] 主动性大脑"
+    layer: L1
+    role: "V4.5 大脑/主动性（六因素框架）"
+    soul_dna_source: "agenda.yaml"
+
+    # 六因素决策框架
+    decision_factors:
+      error_detection: 0.9      # 最高权重
+      goal_threatened: 0.8
+      expertise_match: 0.6
+      misrepresented: 0.7
+      silence_too_long: 0.4
+      agenda_opportunity: 0.75
+
+    # V2.0 新增：导师模式因素
+    mentor_factors:
+      growth_opportunity: 0.70   # 成长机会
+      strategic_insight: 0.65    # 战略洞察
+
+    # 介入模式
+    intervention_patterns:
+      pattern_A:
+        threshold: 1.5  # urgency_score > 1.5
+        mode: "strong"
+        description: "严重方法学错误，强介入"
+
+      pattern_B:
+        threshold: 0.8
+        mode: "moderate"
+        description: "中度问题，温和提醒"
+
+      pattern_C:
+        threshold: 0.4
+        mode: "observe"
+        description: "观察，不主动介入"
+
+    status: "core"
+
+  - id: B-04
+    name: "[B-04] 用户认知画像师 | User Profiler"
+    layer: L1
+    role: "适应/情商（用户建模）"
+    capabilities:
+      - "用户水平识别（novice/expert）"
+      - "沟通风格适应"
+      - "个性化学习路径"
+
+    user_levels:
+      novice:
+        approach: "educate with examples"
+        tone: "supportive and explanatory"
+
+      expert:
+        approach: "direct and concise"
+        tone: "peer-to-peer professional"
+
+      defensive:
+        approach: "cite standards and literature"
+        tone: "objective and evidence-based"
+
+    status: "optional"
+
+  # --- L3 层：元进化 (Meta-Evolution) ---
+  # 提供反思与进化能力
+
+  - id: M-04
+    name: "[M-04] 乐队现场录音师 | Session Recorder"
+    layer: L3
+    role: "反思（学习输入）"
+    capabilities:
+      - "对话质量评估"
+      - "关键决策记录"
+      - "用户反馈捕获"
+
+    recording_triggers:
+      - "严重错误被检测"
+      - "新方法学问题发现"
+      - "用户明确反馈"
+
+    output: "学习数据库（供M-01使用）"
+    status: "optional"
+
+  - id: M-01
+    name: "[M-01] 元一 | 灵魂建筑师"
+    layer: L3
+    role: "进化（学习输出）"
+    capabilities:
+      - "系统自我优化"
+      - "新灵魂铸造"
+      - "能力扩展建议"
+
+    evolution_cycle:
+      frequency: "每100次对话"
+      analysis_scope:
+        - "高频错误模式"
+        - "用户痛点聚类"
+        - "新领域需求"
+
+      output: "系统升级建议与新灵魂设计"
+
+    status: "optional"
+
+# ============================================================================
+# 3. 工蜂单元注册区 - Worker Units Registration
+# ============================================================================
+# 注册 L2 的 4 个功能单元（继承自 multi_agent_config.yaml）
+# 这些是蜂后可以分派具体科研任务的"专业团队"
+
+worker_units:
+
+  # --- Unit 1: ACS-Explorer ---
+  - name: "ACS-Explorer"
+    version: "2.0"
+    description: "文献挖掘的继承者。负责前沿扫描、文献检索与融合。"
+
+    souls:
+      - id: A-06
+        name: "[A-06] 科研战略家 | Research Strategist"
+        expertise:
+          - "研究问题formulation（PICO/FINER）"
+          - "项目可行性评估"
+          - "战略规划"
+
+      - id: C-06
+        name: "[C-06] 知识勘探家 | Knowledge Explorer"
+        expertise:
+          - "文献检索（PubMed, Web of Science）"
+          - "前沿追踪"
+          - "知识融合"
+
+    # 灵魂DNA配置文件（待创建）
+    soul_dna_config: ".acs_mentor/souls/explorer_dna.yaml"
+
+    # 集成工具
+    tools:
+      - "PubMed API"
+      - "Semantic Scholar"
+      - "LlamaIndex for knowledge indexing"
+
+    # 典型任务
+    typical_tasks:
+      - "前沿文献扫描"
+      - "系统综述支持"
+      - "研究gap识别"
+
+  # --- Unit 2: ACS-Analyst ---
+  - name: "ACS-Analyst"
+    version: "1.3"
+    description: "数据分析单元。负责医学统计、生信和机器学习。"
+
+    souls:
+      - id: ACS-Data-Scientist
+        name: "[ACS-Data-Scientist] 数据科学家"
+        expertise:
+          - "统计分析（t检验、ANOVA、回归）"
+          - "生物信息学分析"
+          - "机器学习建模（预测、分类）"
+          - "模型验证（CV, bootstrap）"
+
+    soul_dna_config: ".acs_mentor/souls/analyst_dna.yaml"
+
+    # 工具支持（由 B-09 动态聚合）
+    tools:
+      - "R (统计分析)"
+      - "Python (scikit-learn, pandas)"
+      - "Survival analysis (lifelines)"
+
+    # 质量要求
+    quality_requirements:
+      - "所有模型必须验证"
+      - "报告效应量和置信区间"
+      - "假设检验前提条件检查"
+
+    typical_tasks:
+      - "样本量计算"
+      - "统计分析执行"
+      - "预测模型开发与验证"
+      - "结果可视化"
+
+  # --- Unit 3: ACS-Writer ---
+  - name: "ACS-Writer"
+    version: "1.2"
+    description: "融合版写作单元。负责 V2.0 论证构建与严谨的学术写作 (IMRaD)。"
+
+    souls:
+      - id: ACS-Writer
+        name: "[ACS-Writer] 学术写作专家"
+        expertise:
+          - "IMRaD结构写作"
+          - "Methods section完整性"
+          - "Results精确表达"
+          - "Discussion逻辑构建"
+          - "报告标准遵循（CONSORT, STROBE等）"
+
+    soul_dna_config: ".acs_mentor/souls/writer_dna.yaml"
+
+    # 写作框架
+    writing_frameworks:
+      methods:
+        - "Study design and setting"
+        - "Participants (eligibility, recruitment)"
+        - "Interventions"
+        - "Outcomes and measures"
+        - "Sample size calculation"
+        - "Statistical analysis"
+        - "Ethics approval"
+
+      results:
+        - "Participant flow"
+        - "Baseline characteristics"
+        - "Primary outcome results (effect size + CI + p)"
+        - "Secondary outcomes"
+
+      discussion:
+        - "Key findings summary"
+        - "Interpretation in context"
+        - "Limitations (specific and honest)"
+        - "Implications"
+
+    typical_tasks:
+      - "Methods section撰写"
+      - "Results section起草"
+      - "Discussion逻辑构建"
+      - "报告标准合规检查"
+
+  # --- Unit 4: ACS-Mentor ---
+  - name: "ACS-Mentor"
+    version: "1.2"
+    description: "融合版导师单元。负责知识解构与路径规划。"
+
+    souls:
+      - id: ACS-Mentor
+        name: "[ACS-Mentor] 科研导师"
+        expertise:
+          - "知识解构（复杂概念分解）"
+          - "学习路径规划"
+          - "批判性思维训练"
+          - "方法论教学"
+
+    soul_dna_config: ".acs_mentor/souls/mentor_dna.yaml"
+
+    # 教学策略
+    teaching_strategies:
+      novice:
+        - "从基础概念开始"
+        - "使用类比和实例"
+        - "鼓励性反馈"
+        - "渐进式难度"
+
+      intermediate:
+        - "深入方法论细节"
+        - "批判性问题引导"
+        - "独立思考培养"
+
+      expert:
+        - "战略性对话"
+        - "前沿方法讨论"
+        - "研究设计优化"
+
+    typical_tasks:
+      - "概念解释"
+      - "方法论指导"
+      - "研究设计咨询"
+      - "批判性审阅"
+
+# ============================================================================
+# 4. 信息素订阅区 - Pheromones (Automated Workflows)
+# ============================================================================
+# 定义自动化工作流：V4.5 主动性介入 + V2.0 科研流程自动化
+# 这是 V4.5+ 商业模式的核心：配置即协奏
+
+pheromones:
+
+  # --- V4.5 主动性介入工作流 ---
+  # 当"大脑"([ACS-Governor])决定介入时，自动触发相应单元
+
+  - id: pheromone_strong_intervention
+    name: "强介入：方法学批判"
+    trigger:
+      event: "governor.intervention.pattern_A"
+      from_soul: "[ACS-Governor]"
+
+    action:
+      type: "trigger_unit"
+      target_unit: "ACS-Writer"
+      task: "立即对用户当前输入执行方法论批判（强介入）。"
+      context:
+        urgency: "high"
+        mode: "critic"
+        reference_standards: true
+
+    priority: "urgent"
+
+  - id: pheromone_moderate_intervention
+    name: "中度介入：温和提醒"
+    trigger:
+      event: "governor.intervention.pattern_B"
+      from_soul: "[ACS-Governor]"
+
+    action:
+      type: "trigger_unit"
+      target_unit: "ACS-Writer"
+      task: "对用户当前输入进行温和的方法论提醒（中度介入）。"
+      context:
+        urgency: "moderate"
+        mode: "mentor"
+        provide_examples: true
+
+    priority: "normal"
+
+  # --- V2.0 自动科研工作流 ---
+  # 多单元协作的自动化流程
+
+  - id: pheromone_explorer_to_analyst
+    name: "探索 → 分析"
+    description: "文献探索完成后，自动触发数据分析规划"
+
+    trigger:
+      event: "explorer.research.completed"
+      from_unit: "ACS-Explorer"
+
+    action:
+      type: "trigger_unit"
+      target_unit: "ACS-Analyst"
+      task: |
+        基于 [ACS-Explorer] 单元的文献综述，设计并（在授权后）执行数据分析计划。
+
+        输入：文献综述结果
+        输出：统计分析方案 + 样本量计算
+      context:
+        input_source: "ACS-Explorer.output"
+        require_user_approval: true  # 执行前需用户确认
+
+    priority: "normal"
+
+  - id: pheromone_analyst_to_writer
+    name: "分析 → 写作"
+    description: "数据分析完成后，自动触发论文起草"
+
+    trigger:
+      event: "analyst.results.ready"
+      from_unit: "ACS-Analyst"
+
+    action:
+      type: "trigger_unit"
+      target_unit: "ACS-Writer"
+      task: |
+        基于 [ACS-Analyst] 单元的分析结果（包含统计数据和图表），
+        撰写 IMRaD 结构的论证草稿。
+
+        输入：分析结果（表格、图表、统计量）
+        输出：Methods + Results 初稿
+      context:
+        input_source: "ACS-Analyst.output"
+        writing_sections: ["methods", "results"]
+        reporting_standard: "auto_detect"  # 根据研究类型自动选择
+
+    priority: "normal"
+
+  - id: pheromone_quality_gate
+    name: "质量门：强制验证检查"
+    description: "任何预测模型发布前，必须通过验证检查"
+
+    trigger:
+      event: "analyst.model.ready_to_publish"
+      from_unit: "ACS-Analyst"
+
+    action:
+      type: "quality_check"
+      checker: "[M-06] 手稿校对官"
+      checklist:
+        - "是否有内部验证（CV/bootstrap）？"
+        - "是否有外部验证？"
+        - "是否报告了校准曲线？"
+        - "是否报告了决策曲线分析？"
+        - "是否遵循TRIPOD声明？"
+
+      on_failure:
+        action: "block_publication"
+        notify_unit: "ACS-Writer"
+        message: "模型验证不完整，无法发布。请补充验证步骤。"
+
+    priority: "critical"
+
+  # --- 元学习工作流 ---
+
+  - id: pheromone_session_recording
+    name: "会话录制：学习输入"
+    description: "关键事件触发学习记录"
+
+    trigger:
+      event:
+        - "error.critical.detected"
+        - "user.explicit.feedback"
+        - "novel.method.discussed"
+      from_soul: "*"  # 任何灵魂
+
+    action:
+      type: "record"
+      recorder: "[M-04] 乐队现场录音师"
+      storage: "learning_database"
+
+    priority: "low"
+
+  - id: pheromone_evolution_cycle
+    name: "进化周期：系统优化"
+    description: "每100次对话触发一次进化分析"
+
+    trigger:
+      event: "conversation.count.mod_100"
+
+    action:
+      type: "analyze_and_evolve"
+      analyzer: "[M-01] 元一 | 灵魂建筑师"
+      input_source: "learning_database"
+      output: "system_upgrade_proposal"
+
+    priority: "background"
+
+# ============================================================================
+# 5. 系统级配置 - System-wide Settings
+# ============================================================================
+
+system_settings:
+
+  # 默认工作模式
+  default_mode: "balanced"  # balanced | critic | mentor
+
+  # 质量保障
+  quality_assurance:
+    enforce_reporting_standards: true
+    require_model_validation: true
+    auto_check_multiple_comparisons: true
+
+  # 成本控制
+  cost_management:
+    monthly_budget_usd: 300.0
+    alert_threshold: 0.75
+    optimize_for: "quality_within_budget"
+
+  # 性能监控
+  monitoring:
+    enabled: true
+    provider: "mlflow"
+    experiment_name: "acs_hive_v1.2"
+    track_metrics:
+      - "specialist_activation_frequency"
+      - "synthesis_quality_score"
+      - "user_satisfaction"
+      - "cost_per_query"
+
+  # 记忆系统
+  memory:
+    enabled: true
+    provider: "mem0"
+    project_context_tracking: true
+    user_profile_tracking: true
+
+  # 知识增强
+  knowledge:
+    enabled: true
+    provider: "llamaindex"
+    knowledge_bases:
+      - "design_knowledge"
+      - "stats_knowledge"
+      - "writing_templates"
+
+# ============================================================================
+# 6. 版本与依赖 - Version & Dependencies
+# ============================================================================
+
+dependencies:
+  core:
+    - "langchain >= 0.1.0"
+    - "openai >= 1.0.0"
+
+  optional:
+    - "mem0 >= 0.1.0"  # 记忆系统
+    - "llamaindex >= 0.9.0"  # 知识增强
+    - "mlflow >= 2.0.0"  # 性能监控
+
+# ============================================================================
+# 7. 元数据 - Metadata
+# ============================================================================
+
+metadata:
+  author: "ACS-Hive Development Team"
+  license: "MIT"
+  documentation: "README.md"
+
+  design_principles:
+    - "18个灵魂是'可选'而非'必须'"
+    - "4个Specialist + 1个Coordinator是核心"
+    - "灵魂DNA提供可扩展能力"
+    - "质量优先于速度"
+    - "可重复性是基本要求"
+
+  changelog:
+    - version: "1.2.0"
+      date: "2025-11-17"
+      changes:
+        - "整合18灵魂架构"
+        - "添加信息素自动化工作流"
+        - "集成B-09论文智能体铸造厂v14.1"
+        - "实现三级工具协议"
