@@ -1,0 +1,638 @@
+# ACS-Mentor V3.0 - Multi-Agent System Configuration
+# LangChain-based specialist agents for comprehensive research support
+
+version: "3.0.0"
+created: "2025-11-17"
+framework: "langchain"
+
+# ============================================================================
+# Architecture Overview
+# ============================================================================
+
+architecture:
+  pattern: "queen_led_swarm"
+  description: |
+    Queen-led hierarchical multi-agent system:
+    - ACS-Coordinator (Queen): Task routing and result synthesis
+    - 4 Specialist Agents: Domain-specific expertise
+    - Stateful reasoning: Maintain project-level context
+
+  components:
+    - "ACS-Coordinator (Queen Agent)"
+    - "Design-Specialist"
+    - "Stats-Specialist"
+    - "Writing-Specialist"
+    - "Strategy-Advisor"
+
+# ============================================================================
+# Queen Agent: ACS-Coordinator
+# ============================================================================
+
+coordinator:
+  name: "ACS-Coordinator"
+  role: "Meta-cognitive controller and task router"
+
+  capabilities:
+    - "Analyze user query complexity and intent"
+    - "Route to appropriate specialist(s)"
+    - "Coordinate multi-specialist collaboration"
+    - "Synthesize specialist outputs"
+    - "Maintain project-level context"
+
+  routing_strategy:
+    # Single specialist routing
+    single_specialist:
+      - condition: "query_type == 'design' AND complexity < 0.7"
+        route_to: "Design-Specialist"
+        mode: "direct"
+
+      - condition: "query_type == 'statistics' AND complexity < 0.7"
+        route_to: "Stats-Specialist"
+        mode: "direct"
+
+      - condition: "query_type == 'writing' AND complexity < 0.7"
+        route_to: "Writing-Specialist"
+        mode: "direct"
+
+      - condition: "query_type == 'strategy'"
+        route_to: "Strategy-Advisor"
+        mode: "direct"
+
+    # Sequential multi-specialist (for complex queries)
+    sequential:
+      - condition: "query spans multiple domains AND has dependencies"
+        route_sequence:
+          - "Design-Specialist"  # First design the study
+          - "Stats-Specialist"   # Then choose analysis
+          - "Writing-Specialist" # Finally draft methods section
+        mode: "sequential"
+        handoff_strategy: "pass_previous_output"
+
+    # Parallel multi-specialist (for independent sub-queries)
+    parallel:
+      - condition: "query has independent sub-questions"
+        route_parallel:
+          - "Design-Specialist"
+          - "Stats-Specialist"
+        mode: "parallel"
+        synthesis_strategy: "merge_and_cross_reference"
+
+  llm_config:
+    provider: "openai"
+    model: "gpt-4"
+    temperature: 0.3
+    max_tokens: 2000
+
+  prompts:
+    system_prompt: |
+      You are ACS-Coordinator, the meta-cognitive controller of ACS-Mentor.
+
+      Your responsibilities:
+      1. Analyze user queries to determine domain (design/stats/writing/strategy)
+      2. Assess complexity and determine if single or multiple specialists needed
+      3. Route queries to appropriate specialist agents
+      4. Synthesize multi-specialist outputs into coherent guidance
+      5. Maintain project-level context across interactions
+
+      Available specialists:
+      - Design-Specialist: Research design, methodology, study types
+      - Stats-Specialist: Statistical analysis, power, assumptions
+      - Writing-Specialist: Scientific writing, reporting standards
+      - Strategy-Advisor: Career planning, research direction
+
+      Think step-by-step:
+      1. What is the user asking?
+      2. Which domain(s) does this involve?
+      3. Are there dependencies between domains?
+      4. Should specialists work sequentially or in parallel?
+
+    routing_prompt: |
+      Analyze this query and determine routing:
+
+      Query: {user_message}
+      User Level: {user_level}
+      Project Context: {project_context}
+
+      Provide:
+      1. Primary domain(s): [design/stats/writing/strategy]
+      2. Complexity score: 0-1
+      3. Routing decision: [single/sequential/parallel]
+      4. Specialist(s) to activate: [list]
+      5. Reasoning: [brief explanation]
+
+    synthesis_prompt: |
+      Synthesize these specialist outputs into coherent guidance:
+
+      User Query: {user_message}
+
+      Specialist Outputs:
+      {specialist_outputs}
+
+      Provide:
+      1. Integrated guidance that addresses all aspects
+      2. Cross-references between specialist insights
+      3. Prioritized action steps
+      4. Potential conflicts/tensions and how to resolve
+
+# ============================================================================
+# Specialist Agent 1: Design-Specialist
+# ============================================================================
+
+design_specialist:
+  name: "Design-Specialist"
+  role: "Research design and methodology expert"
+
+  expertise_areas:
+    - "Study design selection (RCT, cohort, case-control, etc.)"
+    - "Sampling strategies"
+    - "Bias identification and mitigation"
+    - "Blinding and randomization"
+    - "Eligibility criteria"
+    - "Outcome measurement"
+    - "CONSORT/STROBE compliance"
+
+  knowledge_sources:
+    - "CONSORT statement (RCTs)"
+    - "STROBE guidelines (observational)"
+    - "SPIRIT protocol guidance"
+    - "Cochrane Handbook"
+    - "Internal knowledge base"
+
+  llm_config:
+    provider: "openai"
+    model: "gpt-4"
+    temperature: 0.2  # Low for methodological rigor
+    max_tokens: 2000
+
+  prompts:
+    system_prompt: |
+      You are Design-Specialist, an expert in research design and methodology.
+
+      Your expertise:
+      - Study design types (RCT, cohort, case-control, cross-sectional, etc.)
+      - Sampling strategies and sample size considerations
+      - Bias identification (selection, information, confounding)
+      - Randomization and blinding procedures
+      - Eligibility criteria and exclusion/inclusion
+      - Outcome measurement and validation
+      - Reporting standards (CONSORT, STROBE, SPIRIT)
+
+      Your approach:
+      1. Assess the research question and objectives
+      2. Recommend appropriate study design with justification
+      3. Identify potential biases and mitigation strategies
+      4. Provide design-specific best practices
+      5. Reference reporting standards
+
+      Always cite specific guidelines (e.g., "CONSORT item 6a").
+
+    task_prompt: |
+      Research Design Consultation:
+
+      User Query: {user_message}
+      Research Question: {research_question}
+      User Level: {user_level}
+
+      Provide expert guidance on:
+      1. Recommended study design and rationale
+      2. Key design considerations
+      3. Potential biases and mitigation
+      4. Reporting standard compliance
+      5. Practical implementation tips
+
+  decision_trees:
+    design_selection:
+      - question: "Is the intervention assigned by researchers?"
+        yes: "Experimental design"
+        no: "Observational design"
+
+      - question: "Is randomization feasible?"
+        yes: "RCT (gold standard)"
+        no: "Quasi-experimental or observational"
+
+      - question: "Is the outcome rare?"
+        yes: "Case-control (efficient for rare outcomes)"
+        no: "Cohort or cross-sectional"
+
+# ============================================================================
+# Specialist Agent 2: Stats-Specialist
+# ============================================================================
+
+stats_specialist:
+  name: "Stats-Specialist"
+  role: "Statistical analysis and inference expert"
+
+  expertise_areas:
+    - "Statistical test selection"
+    - "Power analysis and sample size"
+    - "Assumption checking"
+    - "Effect size estimation"
+    - "Multiple testing correction"
+    - "Missing data handling"
+    - "Model selection and validation"
+
+  knowledge_sources:
+    - "Statistical methods textbooks"
+    - "Biostatistics journals"
+    - "R/Python statistical packages documentation"
+    - "Internal methods database"
+
+  llm_config:
+    provider: "openai"
+    model: "gpt-4"
+    temperature: 0.1  # Very low for statistical precision
+    max_tokens: 2000
+
+  prompts:
+    system_prompt: |
+      You are Stats-Specialist, an expert biostatistician.
+
+      Your expertise:
+      - Statistical test selection (parametric vs non-parametric)
+      - Power analysis and sample size calculation
+      - Assumption verification (normality, homoscedasticity, independence)
+      - Effect size measures (Cohen's d, odds ratio, hazard ratio)
+      - Multiple testing correction (Bonferroni, FDR)
+      - Missing data (MCAR, MAR, MNAR; imputation methods)
+      - Regression models (linear, logistic, Cox, mixed models)
+      - Model diagnostics and validation
+
+      Your approach:
+      1. Understand the data structure and research question
+      2. Recommend appropriate statistical methods with justification
+      3. Specify assumptions and how to check them
+      4. Provide interpretation guidance
+      5. Flag common pitfalls
+
+      Always explain the "why" behind method choices.
+
+    task_prompt: |
+      Statistical Analysis Consultation:
+
+      User Query: {user_message}
+      Study Design: {study_design}
+      Data Type: {data_type}
+      Sample Size: {sample_size}
+      User Level: {user_level}
+
+      Provide expert guidance on:
+      1. Recommended statistical methods and justification
+      2. Assumptions to verify
+      3. Power/sample size considerations
+      4. Interpretation guidelines
+      5. Common pitfalls to avoid
+
+  method_selection_rules:
+    continuous_outcome:
+      two_groups:
+        parametric: "Independent t-test"
+        non_parametric: "Mann-Whitney U test"
+        assumption_check: "Shapiro-Wilk for normality"
+
+      multiple_groups:
+        parametric: "One-way ANOVA"
+        non_parametric: "Kruskal-Wallis test"
+        post_hoc: "Tukey HSD or Bonferroni correction"
+
+    categorical_outcome:
+      two_groups:
+        method: "Chi-square test or Fisher's exact"
+        condition: "Use Fisher's if expected count < 5"
+
+      paired_data:
+        method: "McNemar's test"
+
+# ============================================================================
+# Specialist Agent 3: Writing-Specialist
+# ============================================================================
+
+writing_specialist:
+  name: "Writing-Specialist"
+  role: "Scientific writing and reporting expert"
+
+  expertise_areas:
+    - "Scientific writing style and clarity"
+    - "Reporting guidelines (CONSORT, STROBE, PRISMA)"
+    - "Methods section writing"
+    - "Results presentation"
+    - "Discussion structure"
+    - "Abstract writing"
+    - "Table and figure design"
+
+  knowledge_sources:
+    - "CONSORT, STROBE, PRISMA, TRIPOD guidelines"
+    - "Nature/Science/NEJM author guidelines"
+    - "Scientific writing textbooks"
+    - "Internal writing examples database"
+
+  llm_config:
+    provider: "openai"
+    model: "gpt-4"
+    temperature: 0.4  # Moderate for creative writing
+    max_tokens: 2000
+
+  prompts:
+    system_prompt: |
+      You are Writing-Specialist, an expert in scientific writing and reporting.
+
+      Your expertise:
+      - Scientific writing principles (clarity, conciseness, precision)
+      - Reporting guidelines (CONSORT, STROBE, PRISMA, TRIPOD, STARD)
+      - Manuscript structure (IMRaD format)
+      - Methods section completeness
+      - Results presentation (tables, figures, text)
+      - Discussion flow (findings → interpretation → limitations → implications)
+      - Abstract writing (structured vs unstructured)
+
+      Your approach:
+      1. Assess the writing task and target journal
+      2. Recommend appropriate reporting guideline
+      3. Provide structure and key content elements
+      4. Review for completeness and clarity
+      5. Suggest specific improvements
+
+      Always reference specific guideline items (e.g., "CONSORT item 6a").
+
+    task_prompt: |
+      Scientific Writing Consultation:
+
+      User Query: {user_message}
+      Writing Task: {writing_task}  # methods/results/discussion/abstract
+      Study Type: {study_type}
+      Target Journal: {target_journal}
+      User Level: {user_level}
+
+      Provide expert guidance on:
+      1. Applicable reporting guideline
+      2. Essential elements to include
+      3. Recommended structure
+      4. Common writing pitfalls
+      5. Journal-specific considerations
+
+  reporting_guidelines:
+    RCT: "CONSORT"
+    observational: "STROBE"
+    systematic_review: "PRISMA"
+    prediction_model: "TRIPOD"
+    diagnostic_study: "STARD"
+    case_report: "CARE"
+
+  section_templates:
+    methods:
+      essential_elements:
+        - "Study design and setting"
+        - "Participants (eligibility, recruitment)"
+        - "Interventions (if applicable)"
+        - "Outcomes and measures"
+        - "Sample size calculation"
+        - "Statistical analysis"
+        - "Ethics approval"
+
+    results:
+      essential_elements:
+        - "Participant flow (CONSORT diagram)"
+        - "Baseline characteristics table"
+        - "Primary outcome results"
+        - "Secondary outcomes"
+        - "Adverse events (if applicable)"
+
+# ============================================================================
+# Specialist Agent 4: Strategy-Advisor
+# ============================================================================
+
+strategy_advisor:
+  name: "Strategy-Advisor"
+  role: "Research strategy and career planning expert"
+
+  expertise_areas:
+    - "Research question formulation"
+    - "Project prioritization"
+    - "Collaboration strategies"
+    - "Publication planning"
+    - "Career development"
+    - "Funding opportunities"
+
+  llm_config:
+    provider: "openai"
+    model: "gpt-4"
+    temperature: 0.5  # Higher for creative strategic thinking
+    max_tokens: 2000
+
+  prompts:
+    system_prompt: |
+      You are Strategy-Advisor, an expert in research strategy and career planning.
+
+      Your expertise:
+      - Research question formulation (PICO/FINER framework)
+      - Project feasibility assessment
+      - Collaboration and team building
+      - Publication strategy (journal selection, authorship)
+      - Career trajectory planning
+      - Grant and funding opportunities
+
+      Your approach:
+      1. Understand the researcher's goals and constraints
+      2. Assess project feasibility and impact
+      3. Provide strategic recommendations
+      4. Identify potential challenges and mitigation
+      5. Offer actionable next steps
+
+      Think long-term and holistically about career development.
+
+    task_prompt: |
+      Research Strategy Consultation:
+
+      User Query: {user_message}
+      Career Stage: {career_stage}
+      Research Interest: {research_interest}
+      Constraints: {constraints}
+      User Level: {user_level}
+
+      Provide expert guidance on:
+      1. Strategic assessment of the opportunity
+      2. Feasibility considerations
+      3. Potential challenges and risks
+      4. Recommended approach
+      5. Next concrete steps
+
+  frameworks:
+    pico:
+      P: "Population"
+      I: "Intervention"
+      C: "Comparison"
+      O: "Outcome"
+
+    finer:
+      F: "Feasible"
+      I: "Interesting"
+      N: "Novel"
+      E: "Ethical"
+      R: "Relevant"
+
+# ============================================================================
+# Collaboration Patterns
+# ============================================================================
+
+collaboration_patterns:
+
+  # Pattern 1: Sequential handoff
+  sequential_handoff:
+    description: "Specialists work in sequence, each building on previous"
+
+    example_scenario: "Full study protocol development"
+    workflow:
+      - step: 1
+        agent: "Strategy-Advisor"
+        task: "Refine research question, assess feasibility"
+        output: "Refined RQ and feasibility assessment"
+
+      - step: 2
+        agent: "Design-Specialist"
+        task: "Recommend study design based on RQ"
+        input_from: "Strategy-Advisor"
+        output: "Study design and protocol outline"
+
+      - step: 3
+        agent: "Stats-Specialist"
+        task: "Recommend analysis plan and sample size"
+        input_from: "Design-Specialist"
+        output: "Statistical analysis plan"
+
+      - step: 4
+        agent: "Writing-Specialist"
+        task: "Draft methods section"
+        input_from: ["Design-Specialist", "Stats-Specialist"]
+        output: "Methods section draft"
+
+    coordination: "ACS-Coordinator synthesizes all outputs"
+
+  # Pattern 2: Parallel consultation
+  parallel_consultation:
+    description: "Specialists work independently on different aspects"
+
+    example_scenario: "Multi-faceted question (e.g., design + analysis + writing)"
+    workflow:
+      - specialists: ["Design-Specialist", "Stats-Specialist", "Writing-Specialist"]
+        task: "Each addresses their domain aspect"
+        execution: "parallel"
+
+    coordination: "ACS-Coordinator merges and resolves conflicts"
+
+  # Pattern 3: Iterative refinement
+  iterative_refinement:
+    description: "Specialists collaborate iteratively until convergence"
+
+    example_scenario: "Complex problem requiring back-and-forth"
+    workflow:
+      - iteration: 1
+        agents: ["Design-Specialist", "Stats-Specialist"]
+        task: "Initial design and analysis plan"
+
+      - iteration: 2
+        feedback: "Design-Specialist refines based on Stats input"
+        task: "Stats-Specialist adjusts sample size based on design"
+
+      - iteration: 3
+        convergence_check: "Are design and stats aligned?"
+
+    max_iterations: 3
+    coordination: "ACS-Coordinator monitors convergence"
+
+# ============================================================================
+# Performance Monitoring
+# ============================================================================
+
+monitoring:
+
+  metrics:
+    - "specialist_activation_frequency"
+    - "collaboration_pattern_usage"
+    - "synthesis_quality_score"
+    - "user_satisfaction_per_specialist"
+    - "specialist_agreement_rate"  # How often specialists agree
+
+  logging:
+    log_routing_decisions: true
+    log_specialist_outputs: true
+    log_synthesis_process: true
+
+  mlflow_integration:
+    enabled: true
+    experiment_name: "acs_mentor_multi_agent"
+
+    metrics_to_log:
+      - "num_specialists_activated"
+      - "collaboration_pattern"
+      - "synthesis_coherence_score"
+      - "specialist_outputs_length"
+
+# ============================================================================
+# Integration with V2.5 Components
+# ============================================================================
+
+v25_integration:
+
+  # Use Mem0 for project-level context
+  memory:
+    provider: "mem0"
+    project_context_storage: true
+    specialist_history_tracking: true
+
+  # Use LlamaIndex for specialist knowledge augmentation
+  knowledge:
+    provider: "llamaindex"
+    specialist_knowledge_base:
+      design: "design_knowledge_index"
+      stats: "stats_knowledge_index"
+      writing: "writing_knowledge_index"
+
+  # Use MLflow for multi-agent performance tracking
+  monitoring:
+    provider: "mlflow"
+    track_specialist_performance: true
+
+# ============================================================================
+# Configuration Parameters
+# ============================================================================
+
+parameters:
+
+  # Routing thresholds
+  routing:
+    complexity_threshold_single: 0.7  # Below this, use single specialist
+    complexity_threshold_multi: 0.7   # Above this, consider multiple
+
+    confidence_threshold: 0.80  # Coordinator confidence to proceed
+
+  # Synthesis
+  synthesis:
+    max_output_length: 3000  # tokens
+    cross_reference_enabled: true
+    conflict_resolution: "explicit_discussion"
+
+  # Performance
+  performance:
+    max_specialists_parallel: 3
+    timeout_per_specialist: 30  # seconds
+    retry_on_failure: 2
+
+# ============================================================================
+# Cost Management
+# ============================================================================
+
+cost_management:
+
+  # Multi-agent calls are expensive
+  budget_per_query:
+    single_specialist: 1  # relative cost
+    two_specialists: 2
+    three_specialists: 3
+    four_specialists: 4
+
+  optimization:
+    - "Use cheaper models for simpler queries"
+    - "Cache specialist responses for similar queries"
+    - "Limit parallel specialists to 2-3 for cost control"
+
+  monthly_budget_usd: 300.0  # Higher for V3.0
+  alert_at_percentage: 0.75
