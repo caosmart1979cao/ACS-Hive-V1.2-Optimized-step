@@ -1,0 +1,580 @@
+# ACS-Mentor V2.5 - MLflow Production Monitoring Configuration
+# Experiment tracking, model monitoring, and performance analytics
+
+version: "2.5.0"
+created: "2025-11-17"
+mlflow_version: ">=2.10.0"
+
+# ============================================================================
+# MLflow Server Configuration
+# ============================================================================
+
+server:
+  # Tracking server URI
+  tracking_uri: "file:./.acs_mentor/mlruns"  # Local file-based storage
+  # For production, use:
+  # tracking_uri: "http://localhost:5000"  # MLflow tracking server
+  # tracking_uri: "databricks"  # Databricks workspace
+
+  # Artifact storage
+  artifact_location: ".acs_mentor/mlartifacts"
+
+  # Backend store (for metadata)
+  backend_store_uri: "sqlite:///.acs_mentor/mlflow.db"
+
+  # Registry (for model versioning)
+  registry_uri: null  # Use same as tracking_uri
+
+# ============================================================================
+# Experiment Organization
+# ============================================================================
+
+experiments:
+
+  # Main experiment for guidance quality tracking
+  guidance_quality:
+    name: "acs_mentor_guidance_quality"
+    description: "Track quality metrics for all guidance interactions"
+
+    # Tags
+    tags:
+      project: "ACS-Mentor"
+      version: "2.5"
+      component: "guidance_system"
+
+    # Auto-logging
+    autolog:
+      enabled: true
+      log_models: false  # Don't log full models, just metrics
+
+  # Experiment for A/B testing
+  ab_testing:
+    name: "acs_mentor_ab_tests"
+    description: "A/B tests for different guidance strategies"
+
+    tags:
+      project: "ACS-Mentor"
+      version: "2.5"
+      component: "experimentation"
+
+  # Experiment for memory system performance
+  memory_performance:
+    name: "acs_mentor_memory_system"
+    description: "Track memory system retrieval and storage performance"
+
+    tags:
+      project: "ACS-Mentor"
+      version: "2.5"
+      component: "memory"
+
+  # Experiment for literature retrieval
+  literature_retrieval:
+    name: "acs_mentor_literature"
+    description: "Track literature search and citation quality"
+
+    tags:
+      project: "ACS-Mentor"
+      version: "2.5"
+      component: "knowledge"
+
+# ============================================================================
+# Metrics to Track
+# ============================================================================
+
+metrics:
+
+  # Quality metrics (from LLM-as-a-judge)
+  quality:
+    - name: "overall_quality_score"
+      description: "Overall guidance quality (0-1)"
+      goal: "maximize"
+      threshold: 0.75
+
+    - name: "methodological_accuracy"
+      description: "Methodological correctness (0-1)"
+      goal: "maximize"
+      threshold: 0.80
+
+    - name: "pedagogical_effectiveness"
+      description: "Teaching effectiveness (0-1)"
+      goal: "maximize"
+      threshold: 0.75
+
+    - name: "actionability_score"
+      description: "How actionable the guidance is (0-1)"
+      goal: "maximize"
+      threshold: 0.70
+
+    - name: "completeness_score"
+      description: "Completeness of answer (0-1)"
+      goal: "maximize"
+      threshold: 0.75
+
+    - name: "clarity_score"
+      description: "Clarity of communication (0-1)"
+      goal: "maximize"
+      threshold: 0.80
+
+  # User satisfaction metrics
+  user_satisfaction:
+    - name: "user_explicit_rating"
+      description: "User's direct rating (1-5)"
+      goal: "maximize"
+      threshold: 4.0
+
+    - name: "user_continued_conversation"
+      description: "Did user continue the conversation? (0/1)"
+      goal: "maximize"
+      threshold: 0.60
+
+    - name: "user_thanked_system"
+      description: "User expressed gratitude (0/1)"
+      goal: "maximize"
+
+    - name: "user_disagreed"
+      description: "User disagreed with guidance (0/1)"
+      goal: "minimize"
+      threshold: 0.10
+
+  # Performance metrics
+  performance:
+    - name: "response_latency_ms"
+      description: "Time to generate response (ms)"
+      goal: "minimize"
+      threshold: 5000  # 5 seconds
+
+    - name: "memory_retrieval_latency_ms"
+      description: "Time to retrieve context (ms)"
+      goal: "minimize"
+      threshold: 200
+
+    - name: "literature_search_latency_ms"
+      description: "Time to search literature (ms)"
+      goal: "minimize"
+      threshold: 3000
+
+    - name: "llm_judge_latency_ms"
+      description: "Time for quality evaluation (ms)"
+      goal: "minimize"
+      threshold: 5000
+
+  # Error metrics
+  errors:
+    - name: "error_detection_count"
+      description: "Number of errors detected in user input"
+      goal: "track"
+
+    - name: "recurring_error_count"
+      description: "Number of recurring errors detected"
+      goal: "minimize"
+      threshold: 1
+
+    - name: "system_error_count"
+      description: "Number of system errors/failures"
+      goal: "minimize"
+      threshold: 0
+
+  # Learning metrics
+  learning:
+    - name: "skill_advancement_detected"
+      description: "Did user advance a skill? (0/1)"
+      goal: "maximize"
+
+    - name: "user_capability_growth_rate"
+      description: "Rate of skill progression"
+      goal: "maximize"
+
+    - name: "interaction_count"
+      description: "Total interactions in session"
+      goal: "track"
+
+  # Context metrics
+  context:
+    - name: "complexity_score"
+      description: "Estimated task complexity (0-1)"
+      goal: "track"
+
+    - name: "similar_cases_found"
+      description: "Number of similar cases retrieved"
+      goal: "track"
+
+    - name: "literature_citations_count"
+      description: "Number of papers cited"
+      goal: "track"
+
+# ============================================================================
+# Parameters to Log
+# ============================================================================
+
+parameters:
+
+  # User context
+  user_context:
+    - "user_id"
+    - "user_level"
+    - "session_id"
+    - "total_interactions"
+
+  # System configuration
+  system_config:
+    - "mode_used"  # critic, mentor, hybrid
+    - "pattern_selected"  # Pattern A/B/C/D
+    - "complexity_threshold"
+    - "urgency_score"
+
+  # Memory system
+  memory:
+    - "mem0_enabled"
+    - "chromadb_fallback_used"
+    - "retrieval_top_k"
+    - "similarity_threshold"
+
+  # Literature search
+  literature:
+    - "literature_search_enabled"
+    - "pubmed_enabled"
+    - "arxiv_enabled"
+    - "max_papers_retrieved"
+
+  # LLM configuration
+  llm:
+    - "llm_model"
+    - "temperature"
+    - "max_tokens"
+
+# ============================================================================
+# Tags for Organization
+# ============================================================================
+
+tags:
+
+  # Automatic tags
+  automatic:
+    - "timestamp"
+    - "version"
+    - "environment"  # dev, staging, prod
+
+  # Quality-based tags
+  quality_based:
+    - "quality_tier"  # excellent, good, acceptable, poor
+    - "needs_review"  # true/false
+    - "low_quality_alert"  # true/false
+
+  # User-based tags
+  user_based:
+    - "user_level"  # novice, intermediate, advanced
+    - "new_user"  # true/false
+    - "returning_user"  # true/false
+
+  # Content-based tags
+  content_based:
+    - "topic"  # study_design, statistics, causal_inference, writing
+    - "error_type"  # if error detected
+    - "recurring_error"  # true/false
+
+  # System-based tags
+  system_based:
+    - "degraded_mode"  # true if fallback used
+    - "literature_unavailable"  # true if search failed
+    - "mem0_unavailable"  # true if fallback to SQLite
+
+# ============================================================================
+# Artifacts to Log
+# ============================================================================
+
+artifacts:
+
+  # Log every N interactions
+  log_frequency: 1  # Log every interaction in V2.5
+
+  # Artifact types
+  types:
+
+    - name: "user_message"
+      path: "interactions/user_message.txt"
+      log_always: false  # Only log if flagged
+
+    - name: "guidance_response"
+      path: "interactions/guidance_response.txt"
+      log_always: false
+
+    - name: "llm_judge_report"
+      path: "evaluation/judge_report.json"
+      log_if: "quality_score < 0.70"
+
+    - name: "context_snapshot"
+      path: "context/enriched_context.json"
+      log_if: "error_detected or quality_score < 0.70"
+
+    - name: "literature_citations"
+      path: "literature/citations.json"
+      log_if: "literature_used"
+
+    - name: "skill_progression"
+      path: "user/skill_advancement.json"
+      log_if: "skill_advancement_detected"
+
+# ============================================================================
+# Real-time Monitoring & Alerts
+# ============================================================================
+
+monitoring:
+
+  # Dashboard metrics (for live monitoring)
+  dashboard_metrics:
+    refresh_interval_seconds: 60
+
+    key_metrics:
+      - "average_quality_score_last_hour"
+      - "average_latency_last_hour"
+      - "error_rate_last_hour"
+      - "user_satisfaction_last_hour"
+
+  # Alerts
+  alerts:
+
+    - name: "low_quality_spike"
+      condition: "average_quality_score_last_hour < 0.65"
+      severity: "HIGH"
+      notification:
+        - "log"
+        - "email"  # if configured
+
+    - name: "high_latency"
+      condition: "average_latency_last_hour > 8000"
+      severity: "MEDIUM"
+      notification:
+        - "log"
+
+    - name: "error_spike"
+      condition: "error_rate_last_hour > 0.10"
+      severity: "CRITICAL"
+      notification:
+        - "log"
+        - "email"
+
+    - name: "degraded_mode_frequent"
+      condition: "degraded_mode_rate_last_hour > 0.30"
+      severity: "MEDIUM"
+      notification:
+        - "log"
+
+  # Anomaly detection
+  anomaly_detection:
+    enabled: true
+
+    methods:
+      - "statistical_threshold"  # Simple threshold-based
+      - "moving_average"  # Compare to moving average
+
+    metrics_to_monitor:
+      - "overall_quality_score"
+      - "response_latency_ms"
+      - "user_satisfaction"
+
+# ============================================================================
+# Reporting
+# ============================================================================
+
+reporting:
+
+  # Daily report
+  daily_report:
+    enabled: true
+    generate_at: "23:30"  # 11:30 PM
+
+    include:
+      - "total_interactions"
+      - "average_quality_scores"
+      - "quality_distribution"
+      - "user_satisfaction_summary"
+      - "performance_summary"
+      - "top_errors_detected"
+      - "literature_usage_stats"
+
+    output_path: ".acs_mentor/reports/daily/"
+
+  # Weekly report
+  weekly_report:
+    enabled: true
+    generate_on: "Sunday"
+    time: "23:00"
+
+    include:
+      - "weekly_trends"
+      - "quality_by_topic"
+      - "quality_by_user_level"
+      - "performance_trends"
+      - "user_growth_metrics"
+      - "skill_advancement_stats"
+      - "literature_citation_analysis"
+      - "improvement_recommendations"
+
+    output_path: ".acs_mentor/reports/weekly/"
+
+  # Monthly report
+  monthly_report:
+    enabled: true
+    generate_on_day: 1  # 1st of month
+
+    include:
+      - "monthly_summary"
+      - "comparative_analysis"  # vs previous month
+      - "user_cohort_analysis"
+      - "feature_usage_analysis"
+      - "cost_analysis"  # LLM API costs
+      - "strategic_insights"
+
+    output_path: ".acs_mentor/reports/monthly/"
+
+# ============================================================================
+# A/B Testing Support
+# ============================================================================
+
+ab_testing:
+  enabled: false  # Enable when running experiments
+
+  # Experiment configuration
+  experiments:
+
+    - name: "guidance_depth_test"
+      description: "Test different response depth strategies"
+      start_date: "2025-12-01"
+      end_date: "2025-12-15"
+
+      variants:
+        - id: "control"
+          description: "Current complexity-aware routing"
+          traffic_split: 0.50
+
+        - id: "treatment_deep"
+          description: "Always use deep mentorship"
+          traffic_split: 0.50
+
+      success_metrics:
+        primary: "user_satisfaction"
+        secondary:
+          - "overall_quality_score"
+          - "user_continued_conversation"
+
+      minimum_sample_size: 100
+
+# ============================================================================
+# Integration with External Systems
+# ============================================================================
+
+integrations:
+
+  # Slack notifications (optional)
+  slack:
+    enabled: false
+    webhook_url: null  # Set if using Slack
+    notify_on:
+      - "critical_alerts"
+      - "weekly_summary"
+
+  # Prometheus/Grafana (optional)
+  prometheus:
+    enabled: false
+    port: 8000
+    metrics_endpoint: "/metrics"
+
+  # Custom webhook (optional)
+  webhook:
+    enabled: false
+    url: null
+    events:
+      - "low_quality_interaction"
+      - "system_error"
+
+# ============================================================================
+# Performance Optimization
+# ============================================================================
+
+performance:
+
+  # Async logging
+  async_logging: true
+
+  # Batch logging
+  batch_size: 10
+  batch_interval_seconds: 5
+
+  # Sampling (to reduce overhead)
+  sampling:
+    enabled: false  # Log everything in V2.5
+    sample_rate: 1.0  # 100%
+
+  # Caching
+  cache_enabled: true
+  cache_ttl_seconds: 300
+
+# ============================================================================
+# Data Retention
+# ============================================================================
+
+data_retention:
+
+  # Automatic cleanup
+  auto_cleanup_enabled: true
+
+  retention_policies:
+    - artifact_type: "user_message"
+      retention_days: 90
+
+    - artifact_type: "guidance_response"
+      retention_days: 90
+
+    - artifact_type: "llm_judge_report"
+      retention_days: 180
+
+    - artifact_type: "metrics"
+      retention_days: 365
+
+    - artifact_type: "low_quality_flagged"
+      retention_days: 365  # Keep longer for analysis
+
+  # Archiving
+  archive_enabled: false
+  archive_to: null  # S3 bucket, etc.
+
+# ============================================================================
+# Development & Testing
+# ============================================================================
+
+development:
+
+  # Local testing mode
+  test_mode:
+    enabled: false
+    use_test_tracking_uri: true
+    test_tracking_uri: "file:./test_mlruns"
+
+  # Mock mode (for CI/CD)
+  mock_mode:
+    enabled: false
+    generate_synthetic_metrics: true
+
+# ============================================================================
+# Cost Tracking
+# ============================================================================
+
+cost_tracking:
+  enabled: true
+
+  # Track costs per component
+  components:
+    - "llm_api_calls"
+    - "embedding_generation"
+    - "literature_search_api"
+    - "llm_judge_evaluations"
+
+  # Budget alerts
+  monthly_budget_usd: 200.0
+  alert_at_percentage: 0.80
+
+  # Cost optimization
+  optimize_when_budget_low:
+    - "reduce_llm_judge_sampling"
+    - "use_cheaper_embedding_model"
+    - "reduce_literature_search_frequency"

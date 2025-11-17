@@ -1,0 +1,550 @@
+# ACS-Mentor V2.5 - LLM-as-a-Judge Evaluation Configuration
+# Automated quality assessment for guidance responses
+
+version: "2.5.0"
+created: "2025-11-17"
+
+# ============================================================================
+# LLM Judge Configuration
+# ============================================================================
+
+llm_judge:
+  provider: "openai"
+  model: "gpt-4"
+  temperature: 0.1  # Low temperature for consistent evaluations
+
+  # Fallback models if primary unavailable
+  fallback_models:
+    - "gpt-3.5-turbo"
+    - "claude-3-sonnet"
+
+  # API configuration
+  api:
+    timeout_seconds: 30
+    max_retries: 3
+    retry_delay_seconds: 2
+
+# ============================================================================
+# Evaluation Dimensions
+# ============================================================================
+
+evaluation_dimensions:
+
+  # Dimension 1: Methodological Accuracy (Weight: 35%)
+  methodological_accuracy:
+    weight: 0.35
+    description: "Did the guidance provide methodologically sound advice?"
+
+    scoring_criteria:
+      5_excellent:
+        - "All methods recommended are state-of-the-art"
+        - "Cited specific reporting standards (CONSORT, STROBE, etc.)"
+        - "Identified all critical errors in user's approach"
+        - "No methodological mistakes in the guidance"
+
+      4_good:
+        - "Methods are appropriate and widely accepted"
+        - "Mentioned reporting standards or key references"
+        - "Caught most critical errors"
+        - "Minor omissions but no mistakes"
+
+      3_acceptable:
+        - "Methods are acceptable but not optimal"
+        - "Generic advice without specific standards"
+        - "Missed some errors but caught the major ones"
+        - "Some oversimplifications"
+
+      2_poor:
+        - "Some methods recommended are outdated"
+        - "No reference to standards or literature"
+        - "Missed critical errors"
+        - "Contains minor methodological mistakes"
+
+      1_failing:
+        - "Methodologically incorrect advice"
+        - "Dangerous recommendations that could lead to errors"
+        - "Completely missed critical issues"
+
+    judge_prompt: |
+      Evaluate the methodological accuracy of this guidance on a scale of 1-5.
+
+      Context:
+      - User Query: {user_message}
+      - Guidance Provided: {guidance_response}
+      - User Level: {user_level}
+
+      Consider:
+      1. Are the recommended methods appropriate and up-to-date?
+      2. Did the guidance cite relevant reporting standards or literature?
+      3. Were critical errors identified correctly?
+      4. Are there any methodological mistakes in the guidance itself?
+
+      Provide:
+      - Score (1-5)
+      - Reasoning (2-3 sentences)
+      - Specific strengths and weaknesses
+
+  # Dimension 2: Pedagogical Effectiveness (Weight: 25%)
+  pedagogical_effectiveness:
+    weight: 0.25
+    description: "Was the guidance effective for teaching/learning?"
+
+    scoring_criteria:
+      5_excellent:
+        - "Perfect depth match for user's level"
+        - "Used concrete examples and analogies"
+        - "Explained WHY, not just WHAT"
+        - "Built on user's existing knowledge"
+
+      4_good:
+        - "Good level matching"
+        - "Provided examples"
+        - "Some explanation of reasoning"
+        - "Scaffolded learning appropriately"
+
+      3_acceptable:
+        - "Acceptable level matching"
+        - "Basic examples provided"
+        - "Focused more on WHAT than WHY"
+        - "Some pedagogical structure"
+
+      2_poor:
+        - "Level mismatch (too basic or too advanced)"
+        - "Minimal or no examples"
+        - "Prescriptive without explanation"
+        - "Weak learning support"
+
+      1_failing:
+        - "Completely wrong level"
+        - "No examples or explanations"
+        - "Confusing or overwhelming"
+        - "No pedagogical consideration"
+
+    judge_prompt: |
+      Evaluate the pedagogical effectiveness of this guidance on a scale of 1-5.
+
+      Context:
+      - User Query: {user_message}
+      - Guidance Provided: {guidance_response}
+      - User Level: {user_level}
+      - User's Recent History: {recent_history_summary}
+
+      Consider:
+      1. Does the depth/complexity match the user's level?
+      2. Are there concrete examples and analogies?
+      3. Does it explain WHY, not just prescribe WHAT?
+      4. Does it build on the user's existing knowledge?
+
+      Provide:
+      - Score (1-5)
+      - Reasoning
+      - Suggestions for improvement
+
+  # Dimension 3: Actionability (Weight: 20%)
+  actionability:
+    weight: 0.20
+    description: "Can the user immediately apply this guidance?"
+
+    scoring_criteria:
+      5_excellent:
+        - "Specific, concrete steps provided"
+        - "Examples of how to implement"
+        - "Resources/tools/references included"
+        - "Clear success criteria"
+
+      4_good:
+        - "Clear action steps"
+        - "Some implementation guidance"
+        - "Relevant resources mentioned"
+        - "Implicit success criteria"
+
+      3_acceptable:
+        - "General action direction"
+        - "Basic implementation hints"
+        - "Few resources"
+        - "Vague criteria"
+
+      2_poor:
+        - "Vague recommendations"
+        - "Minimal implementation help"
+        - "No resources"
+        - "No success criteria"
+
+      1_failing:
+        - "Purely conceptual, no actions"
+        - "Cannot be implemented from guidance"
+        - "No practical value"
+
+    judge_prompt: |
+      Evaluate how actionable this guidance is on a scale of 1-5.
+
+      Context:
+      - User Query: {user_message}
+      - Guidance Provided: {guidance_response}
+
+      Consider:
+      1. Are specific, concrete steps provided?
+      2. Is there guidance on HOW to implement?
+      3. Are relevant tools/resources/references included?
+      4. Are success criteria clear?
+
+      Provide:
+      - Score (1-5)
+      - What makes it actionable or not
+      - Missing elements
+
+  # Dimension 4: Completeness (Weight: 15%)
+  completeness:
+    weight: 0.15
+    description: "Did the guidance fully address the user's question?"
+
+    scoring_criteria:
+      5_excellent:
+        - "All aspects of query addressed"
+        - "Anticipated related questions"
+        - "Discussed limitations and edge cases"
+        - "Provided context and background"
+
+      4_good:
+        - "Main question fully answered"
+        - "Some anticipation of related needs"
+        - "Mentioned key limitations"
+        - "Adequate context"
+
+      3_acceptable:
+        - "Core question answered"
+        - "Minimal related topics"
+        - "Basic limitations mentioned"
+        - "Some context"
+
+      2_poor:
+        - "Partial answer only"
+        - "Ignored important aspects"
+        - "No limitations discussed"
+        - "Insufficient context"
+
+      1_failing:
+        - "Did not answer the question"
+        - "Addressed wrong topic"
+        - "Critically incomplete"
+
+    judge_prompt: |
+      Evaluate the completeness of this guidance on a scale of 1-5.
+
+      Context:
+      - User Query: {user_message}
+      - Guidance Provided: {guidance_response}
+
+      Consider:
+      1. Were all aspects of the question addressed?
+      2. Were related questions anticipated?
+      3. Were limitations and edge cases discussed?
+      4. Was sufficient context provided?
+
+      Provide:
+      - Score (1-5)
+      - What was covered vs. missed
+      - Gaps in completeness
+
+  # Dimension 5: Clarity (Weight: 5%)
+  clarity:
+    weight: 0.05
+    description: "Was the guidance clear and well-organized?"
+
+    scoring_criteria:
+      5_excellent:
+        - "Crystal clear language"
+        - "Well-structured (headings, bullets)"
+        - "No jargon without explanation"
+        - "Easy to follow logic"
+
+      4_good:
+        - "Clear language"
+        - "Good structure"
+        - "Minimal unexplained jargon"
+        - "Logical flow"
+
+      3_acceptable:
+        - "Understandable"
+        - "Basic structure"
+        - "Some jargon"
+        - "Mostly logical"
+
+      2_poor:
+        - "Confusing wording"
+        - "Poor structure"
+        - "Heavy jargon"
+        - "Hard to follow"
+
+      1_failing:
+        - "Incomprehensible"
+        - "No structure"
+        - "Inaccessible language"
+
+    judge_prompt: |
+      Evaluate the clarity of this guidance on a scale of 1-5.
+
+      Guidance: {guidance_response}
+
+      Consider:
+      1. Is the language clear and accessible?
+      2. Is it well-organized (headings, bullets, etc.)?
+      3. Is jargon explained when used?
+      4. Is the logic easy to follow?
+
+      Provide:
+      - Score (1-5)
+      - Clarity strengths/weaknesses
+
+# ============================================================================
+# Overall Score Calculation
+# ============================================================================
+
+overall_scoring:
+  formula: |
+    overall_score = (
+      methodological_accuracy * 0.35 +
+      pedagogical_effectiveness * 0.25 +
+      actionability * 0.20 +
+      completeness * 0.15 +
+      clarity * 0.05
+    )
+
+  # Normalized to 0-1 scale
+  normalization: "score / 5.0"
+
+  # Quality thresholds
+  thresholds:
+    excellent: 0.90  # ≥ 4.5/5.0
+    good: 0.80       # ≥ 4.0/5.0
+    acceptable: 0.70 # ≥ 3.5/5.0
+    needs_improvement: 0.60  # ≥ 3.0/5.0
+    poor: 0.50       # < 2.5/5.0
+
+# ============================================================================
+# Evaluation Modes
+# ============================================================================
+
+evaluation_modes:
+
+  # Mode 1: Real-time evaluation (every interaction)
+  realtime:
+    enabled: true
+    async: true  # Don't block user response
+    sample_rate: 1.0  # Evaluate 100% of interactions
+
+    dimensions:
+      - "methodological_accuracy"
+      - "pedagogical_effectiveness"
+      - "actionability"
+
+    # Store results in MLflow
+    log_to_mlflow: true
+    alert_on_low_quality: true
+    alert_threshold: 0.60
+
+  # Mode 2: Batch evaluation (for benchmarks)
+  batch:
+    enabled: true
+
+    dimensions:  # All dimensions
+      - "methodological_accuracy"
+      - "pedagogical_effectiveness"
+      - "actionability"
+      - "completeness"
+      - "clarity"
+
+    # Detailed reporting
+    generate_detailed_report: true
+    include_examples: true
+
+  # Mode 3: Comparative evaluation (A/B testing)
+  comparative:
+    enabled: false  # Enable for A/B tests
+
+    compare_responses: true
+    ranking_method: "pairwise"
+
+    judge_prompt: |
+      Compare these two guidance responses for the same user query.
+
+      Query: {user_message}
+
+      Response A: {response_a}
+      Response B: {response_b}
+
+      Which is better? Consider:
+      1. Methodological accuracy
+      2. Pedagogical effectiveness
+      3. Actionability
+
+      Provide:
+      - Winner (A or B)
+      - Margin (slight, moderate, significant)
+      - Reasoning
+
+# ============================================================================
+# Human Feedback Integration
+# ============================================================================
+
+human_feedback:
+  enabled: true
+
+  # Collect implicit feedback
+  implicit_signals:
+    - "user_continued_conversation"  # Good signal
+    - "user_thanked_system"  # Positive signal
+    - "user_asked_clarification"  # Neutral/negative signal
+    - "user_disagreed"  # Negative signal
+
+  # Explicit feedback collection
+  explicit_feedback:
+    prompt_frequency: 0.1  # Ask for feedback 10% of time
+    prompt_after_high_quality: false  # Don't ask after excellent responses
+    prompt_after_low_quality: true  # Always ask after poor responses
+
+    questions:
+      - "Was this guidance helpful? (1-5 stars)"
+      - "What could be improved?"
+
+  # Use feedback to adjust LLM judge
+  feedback_learning:
+    enabled: true
+    min_samples_for_adjustment: 20
+    adjustment_strategy: "weighted_average"
+
+    # If human rates 5/5 but LLM judge rates 3/5, adjust judge weights
+
+# ============================================================================
+# Performance & Caching
+# ============================================================================
+
+performance:
+  # Caching to avoid re-evaluating same responses
+  cache_enabled: true
+  cache_ttl_seconds: 86400  # 24 hours
+
+  # Batch processing
+  batch_size: 10
+  parallel_evaluations: 3
+
+  # Rate limiting (to avoid API quota issues)
+  max_evaluations_per_minute: 20
+
+# ============================================================================
+# Reporting & Monitoring
+# ============================================================================
+
+reporting:
+
+  # Daily summary
+  daily_summary:
+    enabled: true
+    generate_at: "23:00"  # 11 PM
+
+    metrics:
+      - "average_overall_score"
+      - "score_distribution"
+      - "low_quality_count"
+      - "dimension_breakdown"
+      - "improvement_trends"
+
+  # Weekly deep dive
+  weekly_report:
+    enabled: true
+    generate_on: "Sunday"
+
+    include:
+      - "detailed_dimension_analysis"
+      - "worst_performing_cases"
+      - "best_performing_cases"
+      - "suggestions_for_improvement"
+
+  # Alerts
+  alerts:
+    - condition: "overall_score < 0.60"
+      severity: "HIGH"
+      action: "log_and_notify"
+
+    - condition: "methodological_accuracy < 0.70"
+      severity: "CRITICAL"
+      action: "log_and_notify_immediate"
+
+    - condition: "average_score_trending_down"
+      severity: "MEDIUM"
+      action: "log_for_weekly_review"
+
+# ============================================================================
+# Integration with MLflow
+# ============================================================================
+
+mlflow_integration:
+  enabled: true
+
+  # Logged metrics
+  metrics:
+    - "overall_score"
+    - "methodological_accuracy_score"
+    - "pedagogical_effectiveness_score"
+    - "actionability_score"
+    - "completeness_score"
+    - "clarity_score"
+
+  # Logged parameters
+  parameters:
+    - "user_level"
+    - "mode_used"
+    - "complexity_score"
+    - "session_id"
+
+  # Tags
+  tags:
+    - "quality_tier"  # excellent, good, acceptable, poor
+    - "error_detected"
+    - "recurring_error"
+
+# ============================================================================
+# Development & Testing
+# ============================================================================
+
+development:
+
+  # Use cheaper model for testing
+  test_model: "gpt-3.5-turbo"
+
+  # Debug mode
+  debug:
+    enabled: false
+    log_prompts: true
+    log_responses: true
+    save_examples: true
+
+  # Validation
+  validation:
+    enabled: true
+    test_cases_path: "evaluation/test_cases.json"
+    expected_score_tolerance: 0.15  # ±0.15 acceptable variance
+
+# ============================================================================
+# Cost Management
+# ============================================================================
+
+cost_management:
+
+  # Budget limits
+  max_monthly_budget_usd: 100.0
+  alert_at_percentage: 0.80  # Alert at 80% budget
+
+  # Cost tracking
+  track_per_evaluation_cost: true
+
+  # Optimization
+  use_cheaper_model_when:
+    - "budget_exceeded"
+    - "non_critical_evaluation"
+
+  # Sampling to reduce cost
+  sampling_strategy:
+    low_risk_interactions: 0.50  # Evaluate 50%
+    medium_risk_interactions: 0.80  # Evaluate 80%
+    high_risk_interactions: 1.0  # Evaluate 100%
