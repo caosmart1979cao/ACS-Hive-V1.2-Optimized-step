@@ -1,3 +1,15 @@
+# 📦 PRODUCTION VERSION - ACS-Mentor V2.5 Architecture: Knowledge-Enhanced Mentor
+
+> **生产版本说明**：V2.5是当前推荐的生产就绪版本。
+>
+> - **状态**：生产就绪 ✅
+> - **推荐场景**：需要稳定可靠的研究支持
+> - **核心特性**：双模式（批判+教学）+ 记忆系统 + 知识增强
+> - **最新版本**：V4.0（灵魂DNA架构）详见 [SOUL_DNA_CONFIGURATION.md](../SOUL_DNA_CONFIGURATION.md)
+> - **完整演进**：参见 [ARCHITECTURE_UNIFIED.md](../ARCHITECTURE_UNIFIED.md)
+
+---
+
 # ACS-Mentor V2.5 Architecture: Knowledge-Enhanced Mentor
 
 **Version**: 2.5.0
