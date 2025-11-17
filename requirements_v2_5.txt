@@ -1,0 +1,61 @@
+# ACS-Mentor V2.5 Requirements
+# Knowledge-Enhanced Mentor with Production Monitoring
+
+# ===== Core Dependencies (from V2.1) =====
+pyyaml>=6.0
+sentence-transformers>=2.2.0
+
+# ===== V2.5 New Dependencies =====
+
+# Memory System
+mem0ai>=0.1.0  # Unified memory layer
+
+# Knowledge & Literature Search
+llama-index>=0.10.0  # Document indexing and retrieval
+llama-index-core>=0.10.0
+llama-index-embeddings-huggingface>=0.1.0
+# Note: LitLLM integration (if using separate LitLLM package)
+# litllm>=1.0.0  # Literature review assistant
+
+# Production Monitoring & Evaluation
+mlflow>=2.10.0  # Experiment tracking and monitoring
+# mlflow[genai]>=2.10.0  # For LLM-as-a-judge metrics
+
+# HTTP Requests (for PubMed/arXiv API)
+requests>=2.31.0
+
+# Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Optional: Graph Database (for advanced Mem0 features)
+# neo4j>=5.0.0  # If using Neo4j graph store
+
+# Optional: Advanced NLP
+# spacy>=3.7.0  # For better keyword extraction
+# en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.0/en_core_web_sm-3.7.0.tar.gz
+
+# Development & Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+black>=23.0.0
+flake8>=6.0.0
+
+# Logging
+loguru>=0.7.0  # Better logging (optional)
+
+# ===== Installation Notes =====
+#
+# Basic installation (SQLite + NetworkX):
+#   pip install -r requirements_v2_5.txt
+#
+# Full installation (with Neo4j):
+#   pip install -r requirements_v2_5.txt
+#   pip install neo4j
+#
+# For OpenAI API (required for LLM-as-a-judge):
+#   pip install openai>=1.0.0
+#   export OPENAI_API_KEY="your-api-key"
+#
+# For local LLM inference (alternative to OpenAI):
+#   pip install transformers>=4.35.0 torch>=2.1.0
