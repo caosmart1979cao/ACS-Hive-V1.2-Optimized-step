@@ -1,0 +1,63 @@
+# ACS-Mentor V2.5 - Mem0 Configuration
+
+mem0_config:
+  version: "1.0"
+
+  # Graph store configuration (for memory relationships)
+  graph_store:
+    provider: "networkx"  # Use "neo4j" for production with large scale
+    # For Neo4j production setup:
+    # provider: "neo4j"
+    # config:
+    #   url: "bolt://localhost:7687"
+    #   username: "neo4j"
+    #   password: "your_password"
+
+  # Vector store configuration (for semantic search)
+  vector_store:
+    provider: "chroma"
+    config:
+      path: ".acs_mentor/mem0_vectors"
+      embedding_model: "all-MiniLM-L6-v2"  # Fast, local embeddings
+      collection_name: "acs_mentor_memories"
+
+  # LLM configuration (for memory extraction and synthesis)
+  llm:
+    provider: "openai"
+    config:
+      model: "gpt-4"
+      temperature: 0.1
+      # Uncomment and set your API key:
+      # api_key: "${OPENAI_API_KEY}"
+
+  # Memory organization
+  memory_types:
+    user_profile: "User capability profiles and skill levels"
+    interaction_history: "Past interactions and guidance sessions"
+    guidance_cases: "High-quality guidance examples"
+    error_patterns: "Recurring error patterns for user"
+    learning_progress: "Skill advancement tracking"
+
+# Fallback configuration
+fallback_enabled: true
+fallback_backend: "sqlite"
+fallback_db_path: ".acs_mentor/memory.db"
+
+# Auto-degradation thresholds
+degradation:
+  max_latency_ms: 200  # Switch to fallback if latency exceeds
+  max_error_rate: 0.05  # Switch if error rate exceeds 5%
+  fallback_after_errors: 3  # Switch after 3 consecutive errors
+
+# Performance tuning
+performance:
+  max_memories_per_query: 10
+  cache_enabled: true
+  cache_ttl_seconds: 300  # 5 minutes
+  async_storage: false  # Set to true for production
+
+# Privacy and data retention
+privacy:
+  enable_anonymization: false
+  data_retention_days: 365
+  auto_cleanup_enabled: false

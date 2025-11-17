@@ -1,0 +1,137 @@
+# ACS-Mentor V2.5 - Literature Search Configuration
+
+# PubMed configuration
+pubmed:
+  enabled: true
+  sample_query: "statistical methods clinical trials randomized controlled"
+  max_papers: 100  # Initial index size
+  update_frequency_days: 30  # Re-index every 30 days
+
+  # E-utilities API settings
+  api:
+    base_url: "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
+    timeout_seconds: 30
+    retry_attempts: 3
+    rate_limit_per_second: 3  # NCBI allows 3 requests/second without API key
+
+  # Focus areas
+  focus_topics:
+    - "propensity score"
+    - "causal inference"
+    - "randomized controlled trials"
+    - "observational studies"
+    - "prediction models"
+    - "study design"
+    - "statistical power"
+    - "sample size calculation"
+
+# arXiv configuration
+arxiv:
+  enabled: true
+  categories:
+    - "stat.ME"  # Statistics - Methodology
+    - "stat.AP"  # Statistics - Applications
+    - "cs.LG"    # Machine Learning (for prediction models)
+  max_papers: 50
+  update_frequency_days: 7  # More frequent for preprints
+
+  api:
+    base_url: "http://export.arxiv.org/api/query"
+    timeout_seconds: 30
+
+# User library configuration
+user_library:
+  enabled: true
+  path: ".acs_mentor/user_library/"
+  supported_formats:
+    - ".pdf"
+    - ".txt"
+    - ".md"
+  max_file_size_mb: 10
+  auto_index_on_upload: true
+
+# Indexing configuration
+indexing:
+  chunk_size: 512
+  chunk_overlap: 50
+  embedding_model: "all-MiniLM-L6-v2"  # 384-dim, fast
+  # For higher quality (slower):
+  # embedding_model: "all-mpnet-base-v2"  # 768-dim
+
+  # Metadata extraction
+  extract_metadata:
+    - "title"
+    - "authors"
+    - "journal"
+    - "year"
+    - "volume"
+    - "issue"
+    - "pages"
+    - "doi"
+    - "pmid"
+    - "abstract"
+
+  # Index caching
+  cache_enabled: true
+  cache_dir: ".acs_mentor/literature_indexes/"
+  rebuild_index_if_older_than_days: 30
+
+# Retrieval configuration
+retrieval:
+  top_k: 5  # Default number of papers to retrieve
+  similarity_threshold: 0.75  # Minimum similarity score
+  reranking_enabled: true
+
+  # Reranking weights
+  reranking_weights:
+    semantic_similarity: 0.50
+    journal_tier: 0.25
+    recency: 0.15
+    citation_count: 0.10  # If available
+
+  # Filters
+  default_filters:
+    min_year: 2010  # Exclude papers older than 2010 by default
+    high_impact_journals:
+      - "nejm"
+      - "new england journal of medicine"
+      - "jama"
+      - "journal of the american medical association"
+      - "bmj"
+      - "british medical journal"
+      - "lancet"
+      - "nature medicine"
+      - "statistics in medicine"
+      - "biometrics"
+      - "biostatistics"
+      - "annals of internal medicine"
+
+# Citation generation
+citation:
+  default_style: "apa"  # APA 7th edition
+  supported_styles:
+    - "apa"
+    - "mla"
+    - "chicago"
+    - "vancouver"
+
+  # Include abstracts in citations
+  include_abstracts: false
+
+  # Format options
+  abbreviate_journals: false
+  max_authors_before_et_al: 3
+
+# Performance and caching
+performance:
+  max_concurrent_fetches: 5
+  request_timeout_seconds: 30
+  enable_request_caching: true
+  cache_ttl_hours: 24
+
+# Logging
+logging:
+  level: "INFO"
+  log_file: ".acs_mentor/logs/literature_search.log"
+  log_queries: true
+  log_results: false  # Set to true for debugging
