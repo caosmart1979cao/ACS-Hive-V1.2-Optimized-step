@@ -1,0 +1,294 @@
+# ACS-Mentor V3.0 - Causal DAG Advisor Configuration
+# Interactive causal inference support with DAG construction
+
+version: "3.0.0"
+created: "2025-11-17"
+
+# ============================================================================
+# Overview
+# ============================================================================
+
+description: |
+  Causal DAG Advisor helps researchers:
+  1. Construct causal directed acyclic graphs (DAGs)
+  2. Identify adjustment sets for causal estimation
+  3. Perform sensitivity analysis (E-values)
+  4. Validate identification strategies
+
+# ============================================================================
+# DAG Builder Configuration
+# ============================================================================
+
+dag_builder:
+
+  interaction_mode: "conversational"  # Interactive Q&A to build DAG
+
+  workflow:
+    - step: 1
+      name: "identify_exposure"
+      prompt: "What is your primary exposure/treatment variable?"
+
+    - step: 2
+      name: "identify_outcome"
+      prompt: "What is your outcome variable?"
+
+    - step: 3
+      name: "identify_confounders"
+      prompt: "What variables might affect both exposure and outcome (confounders)?"
+
+    - step: 4
+      name: "identify_mediators"
+      prompt: "Are there variables on the causal path from exposure to outcome (mediators)?"
+
+    - step: 5
+      name: "identify_colliders"
+      prompt: "Are there variables caused by multiple other variables (colliders)?"
+
+    - step: 6
+      name: "validate_dag"
+      action: "Show DAG and ask for confirmation/refinement"
+
+  validation_checks:
+    - "No cycles (must be acyclic)"
+    - "Exposure → Outcome path exists"
+    - "Confounders identified correctly"
+    - "No conditioning on colliders"
+
+# ============================================================================
+# Adjustment Set Identification
+# ============================================================================
+
+adjustment_sets:
+
+  algorithms:
+    - name: "backdoor_criterion"
+      description: "Pearl's backdoor criterion"
+      implementation: "dagitty"  # Using DAGitty algorithms
+
+    - name: "minimal_sufficient_set"
+      description: "Minimal set that blocks all backdoor paths"
+      preferred: true
+
+    - name: "all_valid_sets"
+      description: "List all valid adjustment sets"
+
+  recommendations:
+    priority: "minimal_sufficient"  # Prefer minimal sets
+    explain_blocking: true  # Explain which paths are blocked
+    warn_colliders: true  # Warn if set includes colliders
+
+# ============================================================================
+# Sensitivity Analysis (E-values)
+# ============================================================================
+
+sensitivity_analysis:
+
+  e_value:
+    description: |
+      Minimum strength of association that unmeasured confounder(s) would need
+      to have with both exposure and outcome to explain away the observed effect.
+
+    parameters:
+      - "observed_effect_size"  # RR, OR, HR, etc.
+      - "confidence_interval"   # CI bounds
+
+    interpretation_thresholds:
+      weak_evidence: "< 1.5"
+      moderate_evidence: "1.5 - 2.0"
+      strong_evidence: "> 2.0"
+
+    report_format: |
+      E-value: {e_value}
+      Interpretation: An unmeasured confounder would need to be associated with
+      both exposure and outcome by a risk ratio of {e_value}-fold each to
+      explain away the observed association.
+
+  bias_parameters:
+    - name: "unmeasured_confounding"
+      measure: "bias_factor"
+
+    - name: "selection_bias"
+      measure: "bias_amplification"
+
+# ============================================================================
+# Identification Strategies
+# ============================================================================
+
+identification_strategies:
+
+  # Strategy 1: Backdoor adjustment
+  backdoor:
+    name: "Backdoor Adjustment"
+    description: "Control for confounders that block backdoor paths"
+    when_applicable: "No mediators on backdoor paths"
+    implementation: "Regression with covariates"
+
+  # Strategy 2: Front-door adjustment
+  frontdoor:
+    name: "Front-door Adjustment"
+    description: "Use mediator when cannot measure confounders"
+    when_applicable: "Mediator fully mediates effect, no confounding of mediator-outcome"
+    implementation: "Two-stage estimation"
+
+  # Strategy 3: Instrumental variables
+  instrumental_variable:
+    name: "Instrumental Variable (IV)"
+    description: "Use instrument that affects exposure but not outcome (except through exposure)"
+    when_applicable: "Strong instrument available"
+    requirements:
+      - "Instrument → Exposure (strong first stage)"
+      - "Instrument ⊥ Outcome | Exposure (exclusion restriction)"
+      - "No confounding of Instrument → Outcome"
+
+  # Strategy 4: Difference-in-differences
+  diff_in_diff:
+    name: "Difference-in-Differences"
+    description: "Compare change over time between treated and control"
+    when_applicable: "Panel data, parallel trends assumption"
+
+# ============================================================================
+# DAG Visualization
+# ============================================================================
+
+visualization:
+
+  format: "graphviz_dot"  # DOT notation for DAGs
+
+  node_types:
+    exposure: "color=blue, shape=box"
+    outcome: "color=red, shape=box"
+    confounder: "color=orange, shape=ellipse"
+    mediator: "color=green, shape=ellipse"
+    collider: "color=purple, shape=diamond"
+    unmeasured: "style=dashed"
+
+  edge_types:
+    causal: "solid"
+    unmeasured_confounding: "dashed, color=red"
+
+  examples:
+    simple_confounding: |
+      digraph {
+        C [label="Confounder"]
+        X [label="Exposure", color=blue, shape=box]
+        Y [label="Outcome", color=red, shape=box]
+        C -> X
+        C -> Y
+        X -> Y
+      }
+
+# ============================================================================
+# Common DAG Patterns
+# ============================================================================
+
+common_patterns:
+
+  - name: "simple_confounding"
+    description: "C → X, C → Y, X → Y"
+    adjustment: "Control for C"
+
+  - name: "mediation"
+    description: "X → M → Y, C → X, C → Y"
+    adjustment: "Control for C, not M (if interested in total effect)"
+
+  - name: "collider_bias"
+    description: "X → C ← Y"
+    warning: "Do NOT control for C (induces spurious association)"
+
+  - name: "m_bias"
+    description: "U1 → X → Y, U1 → C ← U2 → Y"
+    warning: "Controlling for C can amplify bias if U1, U2 unmeasured"
+
+# ============================================================================
+# LLM Integration
+# ============================================================================
+
+llm_config:
+  provider: "openai"
+  model: "gpt-4"
+  temperature: 0.2  # Low for logical reasoning
+
+  prompts:
+    dag_construction_prompt: |
+      Help the user construct a causal DAG for their research question.
+
+      Research Question: {research_question}
+      Exposure: {exposure}
+      Outcome: {outcome}
+
+      Guide the user through:
+      1. Identifying potential confounders (affect both X and Y)
+      2. Identifying mediators (on causal path X → Y)
+      3. Identifying colliders (caused by multiple variables)
+      4. Avoiding common pitfalls (conditioning on colliders, etc.)
+
+      Ask clarifying questions step-by-step.
+
+    adjustment_set_prompt: |
+      Given this DAG, recommend adjustment sets.
+
+      DAG structure: {dag_structure}
+      Exposure: {exposure}
+      Outcome: {outcome}
+
+      Provide:
+      1. Minimal sufficient adjustment set
+      2. Explanation of which paths are blocked
+      3. Alternative valid sets (if any)
+      4. Warnings about colliders or m-bias
+
+    sensitivity_prompt: |
+      Calculate and interpret E-value for sensitivity analysis.
+
+      Observed effect: {effect_measure} = {effect_size}
+      95% CI: [{ci_lower}, {ci_upper}]
+
+      Provide:
+      1. E-value for point estimate
+      2. E-value for CI bound closest to null
+      3. Interpretation in plain language
+      4. Assessment of robustness to unmeasured confounding
+
+# ============================================================================
+# Integration with Multi-Agent System
+# ============================================================================
+
+multi_agent_integration:
+
+  trigger_conditions:
+    - "User mentions 'causal', 'confounding', 'DAG', or 'causal inference'"
+    - "Observational study with confounding concerns"
+    - "Need to explain identification strategy"
+
+  collaboration:
+    - with: "Design-Specialist"
+      when: "DAG construction phase"
+      get: "Study design and potential confounders"
+
+    - with: "Stats-Specialist"
+      when: "Adjustment set identified"
+      get: "Recommended analysis methods"
+
+# ============================================================================
+# Educational Resources
+# ============================================================================
+
+resources:
+
+  tutorials:
+    - name: "DAG Basics"
+      url: "http://dagitty.net/learn/"
+
+    - name: "Causal Inference: The Mixtape"
+      author: "Scott Cunningham"
+
+    - name: "The Book of Why"
+      author: "Judea Pearl"
+
+  tools:
+    - name: "DAGitty"
+      url: "http://dagitty.net/"
+      description: "Browser-based DAG drawing and analysis"
+
+    - name: "ggdag (R package)"
+      description: "Create and analyze DAGs in R"

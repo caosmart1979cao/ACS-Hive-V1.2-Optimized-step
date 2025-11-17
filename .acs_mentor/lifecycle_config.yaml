@@ -1,0 +1,506 @@
+# ACS-Mentor V3.0 - Full Research Lifecycle Configuration
+# End-to-end support from question formulation to publication
+
+version: "3.0.0"
+created: "2025-11-17"
+
+# ============================================================================
+# Overview
+# ============================================================================
+
+description: |
+  Full research lifecycle support across 5 phases:
+  1. Research Question Formulation
+  2. Study Design
+  3. Data Analysis
+  4. Manuscript Writing
+  5. Submission & Revision
+
+  Each phase maintains state and context for the next.
+
+# ============================================================================
+# Phase 1: Research Question Formulation
+# ============================================================================
+
+question_formulation:
+
+  frameworks:
+    PICO:
+      P: "Population"
+      I: "Intervention/Exposure"
+      C: "Comparison"
+      O: "Outcome"
+
+    FINER:
+      F: "Feasible (time, budget, expertise)"
+      I: "Interesting (to investigator and field)"
+      N: "Novel (confirms/refutes/extends knowledge)"
+      E: "Ethical (IRB approval possible)"
+      R: "Relevant (scientific, clinical, policy impact)"
+
+  workflow:
+    - step: 1
+      name: "broad_interest"
+      prompt: "What broad area are you interested in?"
+
+    - step: 2
+      name: "specific_focus"
+      prompt: "What specific aspect or gap are you addressing?"
+
+    - step: 3
+      name: "pico_formulation"
+      action: "Guide user through PICO framework"
+
+    - step: 4
+      name: "finer_assessment"
+      action: "Assess feasibility and novelty"
+
+    - step: 5
+      name: "final_rq"
+      output: "Refined, structured research question"
+
+  output_template: |
+    Research Question: {question}
+
+    PICO Elements:
+    - Population: {population}
+    - Intervention: {intervention}
+    - Comparison: {comparison}
+    - Outcome: {outcome}
+
+    FINER Assessment:
+    - Feasible: {feasibility_score}/5
+    - Interesting: {interest_score}/5
+    - Novel: {novelty_score}/5
+    - Ethical: {ethical_concerns}
+    - Relevant: {relevance_score}/5
+
+    Recommended next steps: {next_steps}
+
+# ============================================================================
+# Phase 2: Study Design
+# ============================================================================
+
+study_design:
+
+  design_selection_tree:
+    - question: "Is intervention assigned by researchers?"
+      yes:
+        - question: "Is randomization feasible?"
+          yes: "Randomized Controlled Trial (RCT)"
+          no: "Quasi-experimental design"
+      no:
+        - question: "Is outcome rare?"
+          yes: "Case-control study"
+          no:
+            - question: "Following over time?"
+              yes: "Cohort study"
+              no: "Cross-sectional study"
+
+  protocol_template:
+    sections:
+      - "Title and background"
+      - "Objectives and hypotheses"
+      - "Study design and setting"
+      - "Participants (eligibility, recruitment)"
+      - "Interventions (if applicable)"
+      - "Outcomes and measurements"
+      - "Sample size calculation"
+      - "Data collection procedures"
+      - "Statistical analysis plan"
+      - "Ethics and dissemination"
+
+  reporting_standards:
+    RCT: "CONSORT + SPIRIT (protocol)"
+    cohort: "STROBE"
+    case_control: "STROBE"
+    cross_sectional: "STROBE"
+
+  milestones:
+    - "Research question refined"
+    - "Study design selected"
+    - "Protocol drafted"
+    - "Sample size calculated"
+    - "Ethics approval obtained"
+    - "Ready for data collection"
+
+# ============================================================================
+# Phase 3: Data Analysis
+# ============================================================================
+
+data_analysis:
+
+  workflow:
+    - step: 1
+      name: "data_exploration"
+      tasks:
+        - "Descriptive statistics"
+        - "Missing data assessment"
+        - "Distribution checks"
+        - "Outlier detection"
+
+    - step: 2
+      name: "assumption_checking"
+      tasks:
+        - "Normality (Shapiro-Wilk)"
+        - "Homoscedasticity (Levene's test)"
+        - "Independence (residual plots)"
+
+    - step: 3
+      name: "main_analysis"
+      tasks:
+        - "Primary outcome analysis"
+        - "Secondary outcomes"
+        - "Subgroup analyses (pre-specified)"
+
+    - step: 4
+      name: "sensitivity_analysis"
+      tasks:
+        - "Different assumptions"
+        - "Imputation methods"
+        - "Outlier exclusion"
+
+    - step: 5
+      name: "results_compilation"
+      outputs:
+        - "Table 1: Baseline characteristics"
+        - "Table 2: Main results"
+        - "Supplementary tables"
+
+  analysis_plan_template: |
+    Statistical Analysis Plan (SAP)
+
+    1. Software: [R/Stata/SAS/SPSS]
+
+    2. Descriptive Statistics:
+       - Continuous: Mean ± SD or Median [IQR]
+       - Categorical: N (%)
+
+    3. Primary Analysis:
+       - Outcome: {primary_outcome}
+       - Method: {method}
+       - Adjustment: {covariates}
+       - Missing data: {missing_strategy}
+
+    4. Secondary Analyses:
+       {secondary_analyses}
+
+    5. Sensitivity Analyses:
+       {sensitivity_analyses}
+
+    6. Significance level: α = 0.05 (two-sided)
+
+  tools_integration:
+    R:
+      packages: ["tidyverse", "lme4", "survival", "mice"]
+    Python:
+      packages: ["pandas", "statsmodels", "scikit-learn", "lifelines"]
+    Stata:
+      commands: ["regress", "logit", "stcox", "mixed"]
+
+# ============================================================================
+# Phase 4: Manuscript Writing
+# ============================================================================
+
+manuscript_writing:
+
+  structure:  # IMRaD format
+    - section: "Title"
+      guidance: "Concise, informative, includes key variables"
+
+    - section: "Abstract"
+      guidance: "Structured: Background, Methods, Results, Conclusions"
+      word_limit: 250-300
+
+    - section: "Introduction"
+      paragraphs:
+        - "Background and context"
+        - "Knowledge gap"
+        - "Study objectives"
+      word_limit: 500-750
+
+    - section: "Methods"
+      subsections:
+        - "Study design and setting"
+        - "Participants"
+        - "Interventions (if applicable)"
+        - "Outcomes"
+        - "Statistical analysis"
+      reporting_standard: "Follow CONSORT/STROBE checklist"
+      word_limit: 1000-1500
+
+    - section: "Results"
+      flow:
+        - "Participant flow (diagram)"
+        - "Baseline characteristics (Table 1)"
+        - "Primary outcome"
+        - "Secondary outcomes"
+        - "Adverse events (if applicable)"
+      word_limit: 1000-1500
+
+    - section: "Discussion"
+      structure:
+        - "Summary of main findings"
+        - "Comparison with previous studies"
+        - "Strengths and limitations"
+        - "Clinical/policy implications"
+        - "Future research"
+      word_limit: 1000-1500
+
+    - section: "References"
+      style: "Vancouver or APA (check journal)"
+
+  writing_guidelines:
+    clarity:
+      - "Use active voice when possible"
+      - "Avoid jargon or define when necessary"
+      - "One main idea per paragraph"
+
+    precision:
+      - "Report exact p-values (not 'p<0.05')"
+      - "Include confidence intervals"
+      - "Specify effect sizes"
+
+    transparency:
+      - "Report all pre-specified outcomes"
+      - "Acknowledge limitations honestly"
+      - "Declare conflicts of interest"
+
+  tables_and_figures:
+    table_1:
+      title: "Baseline Characteristics"
+      format: "Descriptive stats by group"
+      footnotes: "p-values from appropriate tests"
+
+    main_results_table:
+      title: "Primary and Secondary Outcomes"
+      columns: ["Outcome", "Intervention", "Control", "Effect (95% CI)", "p-value"]
+
+    consort_diagram:
+      required_for: "RCTs"
+      tool: "http://www.consort-statement.org/consort-statement/flow-diagram"
+
+# ============================================================================
+# Phase 5: Submission & Revision
+# ============================================================================
+
+submission:
+
+  journal_selection:
+    factors:
+      - "Impact factor vs. target audience"
+      - "Open access vs. subscription"
+      - "Turnaround time"
+      - "Acceptance rate"
+      - "Scope alignment"
+
+    tiers:
+      tier_1: ["NEJM", "JAMA", "Lancet", "BMJ", "Nature Medicine"]
+      tier_2: ["PLOS Medicine", "Journal of Clinical Epidemiology", "Statistics in Medicine"]
+      tier_3: ["Specialty journals"]
+
+  submission_checklist:
+    - "Title page (all authors, affiliations, corresponding)"
+    - "Abstract (follows journal format)"
+    - "Main manuscript (word count within limit)"
+    - "Tables and figures (high resolution)"
+    - "Supplementary materials"
+    - "Completed reporting checklist (CONSORT/STROBE)"
+    - "Cover letter"
+    - "Conflicts of interest declaration"
+    - "Ethics approval documentation"
+
+  cover_letter_template: |
+    Dear Editor,
+
+    We are pleased to submit our manuscript titled "{title}" for
+    consideration for publication in {journal}.
+
+    [Brief context and significance - 2-3 sentences]
+
+    [Key findings - 2-3 sentences]
+
+    [Why suitable for this journal - 1-2 sentences]
+
+    This work is original and has not been published elsewhere.
+    All authors have approved the submission.
+
+    Thank you for your consideration.
+
+    Sincerely,
+    [Corresponding Author]
+
+  revision_strategy:
+    response_template: |
+      Reviewer {reviewer_number} Comments
+
+      Comment 1: {comment}
+      Response: {response}
+      Changes made: {changes}
+      Location: {page_line}
+
+    categories:
+      major_revisions:
+        - "Additional analyses"
+        - "Rewrite sections"
+        - "Address fundamental concerns"
+        timeline: "2-4 weeks"
+
+      minor_revisions:
+        - "Clarifications"
+        - "Additional references"
+        - "Minor wording changes"
+        timeline: "1-2 weeks"
+
+# ============================================================================
+# Project-Level Context Management
+# ============================================================================
+
+context_management:
+
+  project_state:
+    fields:
+      - "research_question"
+      - "study_design"
+      - "sample_size"
+      - "data_collection_status"
+      - "analysis_status"
+      - "writing_status"
+      - "submission_status"
+      - "target_journal"
+
+  phase_transitions:
+    - from: "question_formulation"
+      to: "study_design"
+      trigger: "FINER assessment complete, RQ refined"
+      handoff: "Pass RQ and PICO elements to design phase"
+
+    - from: "study_design"
+      to: "data_analysis"
+      trigger: "Data collection complete, dataset ready"
+      handoff: "Pass design type, variables, SAP to analysis phase"
+
+    - from: "data_analysis"
+      to: "manuscript_writing"
+      trigger: "Results compiled, tables ready"
+      handoff: "Pass tables, findings summary to writing phase"
+
+    - from: "manuscript_writing"
+      to: "submission"
+      trigger: "Manuscript drafted, co-authors approved"
+      handoff: "Pass final manuscript, target journal to submission phase"
+
+  milestones_tracking:
+    - milestone: "RQ formulated"
+      phase: "question_formulation"
+
+    - milestone: "Protocol complete"
+      phase: "study_design"
+
+    - milestone: "Ethics approved"
+      phase: "study_design"
+
+    - milestone: "Data collected"
+      phase: "study_design"
+
+    - milestone: "Analysis complete"
+      phase: "data_analysis"
+
+    - milestone: "Manuscript drafted"
+      phase: "manuscript_writing"
+
+    - milestone: "Submitted"
+      phase: "submission"
+
+    - milestone: "Accepted"
+      phase: "submission"
+
+# ============================================================================
+# Integration with Multi-Agent System
+# ============================================================================
+
+multi_agent_integration:
+
+  phase_specialist_mapping:
+    question_formulation:
+      primary: "Strategy-Advisor"
+      supporting: ["Design-Specialist"]
+
+    study_design:
+      primary: "Design-Specialist"
+      supporting: ["Stats-Specialist", "Strategy-Advisor"]
+
+    data_analysis:
+      primary: "Stats-Specialist"
+      supporting: ["Design-Specialist"]
+
+    manuscript_writing:
+      primary: "Writing-Specialist"
+      supporting: ["Design-Specialist", "Stats-Specialist"]
+
+    submission:
+      primary: "Strategy-Advisor"
+      supporting: ["Writing-Specialist"]
+
+# ============================================================================
+# Monitoring & Progress Tracking
+# ============================================================================
+
+monitoring:
+
+  metrics:
+    - "phase_completion_rate"
+    - "average_time_per_phase"
+    - "milestone_achievement_rate"
+    - "user_dropout_rate"  # Which phase do users drop off?
+
+  mlflow_integration:
+    enabled: true
+    experiment_name: "acs_mentor_research_lifecycle"
+
+    track_per_project:
+      - "project_id"
+      - "current_phase"
+      - "milestones_completed"
+      - "time_in_current_phase"
+      - "specialist_consultations_count"
+
+# ============================================================================
+# Educational Scaffolding
+# ============================================================================
+
+education:
+
+  phase_tutorials:
+    question_formulation:
+      resources:
+        - "PICO framework guide"
+        - "FINER criteria explanation"
+        - "Literature gap identification"
+
+    study_design:
+      resources:
+        - "Study design decision tree"
+        - "Sample size calculation tutorials"
+        - "Protocol writing guide"
+
+    data_analysis:
+      resources:
+        - "Statistical test selection flowchart"
+        - "R/Python code examples"
+        - "Assumption checking guide"
+
+    manuscript_writing:
+      resources:
+        - "IMRaD structure template"
+        - "CONSORT/STROBE checklists"
+        - "Writing style guides"
+
+  skill_development:
+    track_skills_acquired:
+      - "Research question formulation"
+      - "Study design selection"
+      - "Sample size calculation"
+      - "Statistical analysis"
+      - "Scientific writing"
+      - "Peer review response"
