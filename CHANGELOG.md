@@ -1,5 +1,261 @@
 # CHANGELOG - ACS系统更新日志
 
+## Version 4.0 - Soul DNA Architecture (2025-11-17)
+
+### 🧬 核心主题：从"配置分散"到"灵魂DNA统一"
+
+**核心突破**: 引入18灵魂架构系统，实现从功能模块到认知实体的质变
+
+**灵感来源**: 生物DNA启发 + 配置即代码哲学
+
+本版本在V3.0多智能体基础上，引入**灵魂DNA系统**、**三级工具协议**、**信息素自动化**，实现了从配置分散到架构统一的飞跃。
+
+---
+
+### 🚀 三大核心创新
+
+**1. 18灵魂架构系统** 🧬
+
+完整的认知实体定义，超越简单的功能模块
+
+- **灵魂DNA结构**:
+  - 认知类型 (Cognitive Type)
+  - 核心信念 (Core Beliefs)
+  - 内在冲突 (Internal Conflict)
+  - 独特视角 (Unique Perspective)
+  - 美学追求 (Aesthetic Pursuit)
+  - 系统定位 (System Positioning)
+  - 核心能力 (Capabilities)
+  - 工作流协议 (Workflow)
+
+- **四层架构**:
+  ```
+  L0 (系统基石): 8个灵魂 - 能力、工具、质量保障
+  L1 (状态决策): 3个灵魂 - 人格、主动性、适应
+  L2 (功能单元): 4个单元 - 科研工作流专家
+  L3 (元进化):   2个灵魂 - 学习与进化
+  ```
+
+- **配置文件**:
+  - `.acs_mentor/souls/explorer_dna.yaml` (444行)
+  - `.acs_mentor/souls/analyst_dna.yaml` (676行)
+  - `.acs_mentor/souls/writer_dna.yaml` (715行)
+  - `.acs_mentor/souls/mentor_dna.yaml` (637行)
+
+**2. [B-09] 论文智能体铸造厂 v14.1 - 三级工具协议** 🔧
+
+系统的"能力生态架构师"，动态工具聚合
+
+- **三级优先级**:
+  ```
+  L1 (项目级)   harmonia.md          最高优先级
+  L2 (用户级)   ~/.config/mcp.json   中等优先级
+  L3 (系统级)   内置19个灵魂          基础能力
+  ```
+
+- **动态聚合流程**:
+  1. 扫描 L3 (系统级) → 加载标准工具
+  2. 扫描 L2 (用户级) → 合并用户工具（同名覆盖）
+  3. 扫描 L1 (项目级) → 最终覆盖
+  4. 生成 final_tool_manifest
+  5. 交付给核心引擎
+
+- **价值**:
+  - 项目专属工具优先级最高
+  - 用户个性化配置次之
+  - 系统基础能力兜底
+  - 完全动态，无需重启
+
+**3. 信息素自动化工作流 (Pheromones)** 🐝
+
+配置即协奏，工作流自动触发
+
+- **V4.5 主动性介入**:
+  - Pattern A (强介入): governor → writer (方法学批判)
+  - Pattern B (中度介入): governor → writer (温和提醒)
+
+- **V2.0 科研工作流**:
+  - explorer → analyst (文献综述完成自动触发数据分析)
+  - analyst → writer (分析完成自动触发论文撰写)
+
+- **质量门检查**:
+  - analyst.model.ready_to_publish → [M-06] 手稿校对官
+  - 强制验证checklist
+  - 不通过则阻止发布
+
+---
+
+### 📊 架构对比
+
+| 维度 | V3.0 | V4.0 | 提升 |
+|------|------|------|------|
+| **配置统一** | 分散（multi_agent + mem0 + mlflow） | 统一（mindsymphony.config.yml） | 🚀 质变 |
+| **工具管理** | 硬编码 | 三级动态协议 | 🚀 质变 |
+| **工作流** | 手动触发 | 信息素自动化 | ✅ 新增 |
+| **灵魂定义** | 功能描述 | 完整DNA（8维度） | ✅ 新增 |
+| **可扩展性** | 修改代码 | 配置文件 | ✅ 提升 |
+
+---
+
+### 📁 文件清单
+
+**核心配置**:
+1. `mindsymphony.config.yml` (749行) - 总配置入口
+2. `SOUL_DNA_CONFIGURATION.md` (500行) - 配置系统文档
+3. `SYSTEM_EVOLUTION_MAP.md` (600行) - 版本演进梳理
+
+**灵魂DNA配置** (新增4个文件, ~2,472行):
+4. `.acs_mentor/souls/explorer_dna.yaml` (444行)
+5. `.acs_mentor/souls/analyst_dna.yaml` (676行)
+6. `.acs_mentor/souls/writer_dna.yaml` (715行)
+7. `.acs_mentor/souls/mentor_dna.yaml` (637行)
+
+**总计**: 新增~3,821行配置代码和文档
+
+---
+
+### 🎯 核心价值
+
+| 能力 | V3.0 | V4.0 | 提升 |
+|------|------|------|------|
+| **配置统一** | 分散5个文件 | 单一入口 | 🚀 质变 |
+| **工具扩展** | 硬编码 | 三级协议 | 🚀 质变 |
+| **工作流自动化** | 无 | 信息素触发 | ✅ 新增 |
+| **灵魂深度** | 功能描述 | 8维度DNA | ✅ 新增 |
+| **可维护性** | 中 | 高 | ✅ 提升 |
+
+---
+
+### 🔮 V5.0预告
+
+**可能方向**:
+1. **神经进化** - 灵魂DNA自动优化
+2. **跨项目学习** - 知识图谱共享
+3. **社区生态** - 灵魂DNA市场
+
+---
+
+**Version**: 4.0.0
+**Release Date**: 2025-11-17
+**Status**: Experimental (架构完整，部分功能待实现)
+**Contributors**: ACS-Hive Development Team
+
+---
+
+## Version 3.0 - Full Research Lifecycle Partner (2025-11-17)
+
+### 🎯 核心主题：从"知识增强"到"全生命周期伙伴"
+
+**核心突破**: 引入LangChain多智能体协作，实现从单点支持到全流程陪伴
+
+**灵感来源**: 科研实践的完整生命周期需求
+
+本版本在V2.5知识增强基础上，引入**多智能体系统**、**因果DAG顾问**、**生命周期管理**，实现了从工具到伙伴的质变。
+
+---
+
+### 🚀 三大核心升级
+
+**1. LangChain多智能体系统** 🤖
+
+Queen-led hierarchical multi-agent architecture
+
+- **核心组件**:
+  - ACS-Coordinator (Queen Agent) - 元认知控制与任务路由
+  - Design-Specialist - 研究设计与方法论专家
+  - Stats-Specialist - 统计分析与推断专家
+  - Writing-Specialist - 科学写作与报告专家
+  - Strategy-Advisor - 研究战略与职业规划专家
+
+- **协作模式**:
+  - Sequential handoff (串行传递)
+  - Parallel consultation (并行咨询)
+  - Iterative refinement (迭代优化)
+
+- **路由策略**:
+  ```python
+  if complexity < 0.7:
+      → Single specialist (直接路由)
+  elif dependencies exist:
+      → Sequential workflow (串行工作流)
+  else:
+      → Parallel workflow (并行工作流)
+  ```
+
+- **配置文件**: `.acs_mentor/multi_agent_config.yaml` (639行)
+
+**2. Causal DAG交互式顾问** 📊
+
+因果推断的可视化与验证
+
+- **核心功能**:
+  - 交互式DAG构建
+  - 自动识别混杂因素
+  - 碰撞因素警告
+  - 因果路径分析
+  - d-separation检验
+
+- **方法库**:
+  - Propensity Score Matching
+  - Instrumental Variables
+  - Difference-in-Differences
+  - Regression Discontinuity
+
+- **配置文件**: `.acs_mentor/causal_dag_config.yaml` (402行)
+
+**3. 全生命周期管理** 📈
+
+从选题到发表的端到端支持
+
+- **6个阶段**:
+  1. Topic Selection (选题)
+  2. Study Design (设计)
+  3. Data Collection (数据收集)
+  4. Analysis (分析)
+  5. Writing (写作)
+  6. Submission (投稿)
+
+- **Checkpoint机制**:
+  - 每个阶段的质量门
+  - 强制性审查点
+  - 可回溯修正
+
+- **配置文件**: `.acs_mentor/lifecycle_config.yaml` (600行)
+
+---
+
+### 📊 性能指标
+
+| Metric | V2.5 | V3.0 Target | 状态 |
+|--------|------|-------------|------|
+| **Specialist Accuracy** | N/A | >90% | ⏳ 待验证 |
+| **Routing Accuracy** | N/A | >85% | ⏳ 待验证 |
+| **Synthesis Quality** | N/A | >0.85 | ⏳ 待验证 |
+| **User Satisfaction** | >0.85 | >0.90 | ⏳ 目标 |
+
+---
+
+### 📁 文件清单
+
+**新增配置** (3个文件, ~1,641行):
+1. `.acs_mentor/multi_agent_config.yaml` (639行)
+2. `.acs_mentor/causal_dag_config.yaml` (402行)
+3. `.acs_mentor/lifecycle_config.yaml` (600行)
+
+**架构文档**:
+4. `ACS_MENTOR_V3_0_ARCHITECTURE.md` (900行)
+
+**总计**: 新增~2,541行核心代码和文档
+
+---
+
+**Version**: 3.0.0
+**Release Date**: 2025-11-17
+**Status**: Partial Implementation (配置完整，集成进行中)
+**Contributors**: ACS-Hive Development Team
+
+---
+
 ## Version 2.5 - Knowledge-Enhanced Mentor with Production Monitoring (2025-11-16)
 
 ### 🎓 核心主题：从"会学习的导师"到"知识渊博的导师"
