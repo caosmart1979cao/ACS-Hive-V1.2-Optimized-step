@@ -108,17 +108,18 @@ class ACSCoordinator:
             return self._specialists[specialist_name]
 
         # Import and initialize specialist
+        from agents.specialists import (
+            DesignSpecialist, StatsSpecialist,
+            WritingSpecialist, StrategyAdvisor
+        )
+
         if specialist_name == "Design-Specialist":
-            from agents.design_specialist import DesignSpecialist
             specialist = DesignSpecialist(self.config)
         elif specialist_name == "Stats-Specialist":
-            from agents.stats_specialist import StatsSpecialist
             specialist = StatsSpecialist(self.config)
         elif specialist_name == "Writing-Specialist":
-            from agents.writing_specialist import WritingSpecialist
             specialist = WritingSpecialist(self.config)
         elif specialist_name == "Strategy-Advisor":
-            from agents.strategy_advisor import StrategyAdvisor
             specialist = StrategyAdvisor(self.config)
         else:
             raise ValueError(f"Unknown specialist: {specialist_name}")
