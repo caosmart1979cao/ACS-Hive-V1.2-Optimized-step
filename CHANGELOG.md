@@ -1,5 +1,61 @@
 # CHANGELOG - ACS系统更新日志
 
+**当前版本**: V5.0（完整研究生命周期系统）⭐
+**生产版本**: V2.5（知识增强导师）
+
+---
+
+## Version 5.0 - Complete Research Lifecycle System (2025-11-18)
+
+### 🎯 核心主题：Phase 1-3全面实施
+
+**核心突破**: 从灵魂DNA到完整研究生命周期覆盖，新增7个灵魂（核心4+可选3）
+
+### ✨ Phase 1: 核心系统
+
+#### 新增灵魂
+
+1. **Designer（研究设计师）** - [A-01] ⭐⭐⭐⭐⭐
+   - 文件: `designer_dna.yaml` (444行)
+   - 能力: PICO精炼/样本量计算/RCT设计/偏倚控制
+   - 价值: 填补研究起点缺口
+
+2. **Reviewer（同行评审者）** - [A-05] ⭐⭐⭐⭐⭐
+   - 文件: `reviewer_dna.yaml` (500行)
+   - 能力: 顶刊审稿模拟/CONSORT检查/Rebuttal指导
+   - 价值: 投稿前预审，接受率+30%
+
+3. **Guardian（质量守护者）** - [B-10] ⭐⭐⭐⭐
+   - 层级: L0系统基石
+   - 能力: 内建质量保证/CONSORT自动检查
+   - 价值: 质量门槛控制
+
+### 📚 Phase 2: 完整系统
+
+4. **Librarian（知识管理员）** - [B-11] ⭐⭐⭐⭐
+   - 层级: L0系统基石
+   - 能力: RAG长期记忆/文献图谱/知识复用
+   - 技术: Vector DB + Embedding
+
+### 🔬 Phase 3: 领域扩展
+
+5-7. **可选专家（3个）**:
+   - Ethicist（伦理顾问）- 临床试验必需
+   - Bioinformatician（生信专家）- 组学研究
+   - Epidemiologist（流行病学家）- 因果推断
+
+### 🏗️ 架构优化
+
+**灵魂精简**: 18个（V4.0）→ 15核心+3可选（V5.0）
+
+**完整生命周期**:
+```
+问题→设计→文献→伦理→分析→撰写→质检→预审→教学→进化
+ Designer Explorer Ethicist Analyst Writer Guardian Reviewer Mentor Architect
+```
+
+---
+
 ## Version 4.0 - Soul DNA Architecture (2025-11-17)
 
 ### 🧬 核心主题：从"配置分散"到"灵魂DNA统一"

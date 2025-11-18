@@ -1,7 +1,7 @@
 # ACS 蜂巢 - 学术研究全生命周期智能系统
 # Academic Concert System - Hive Edition
 
-**当前版本**: V4.0（灵魂DNA架构） | **生产版本**: V2.5（知识增强导师）
+**当前版本**: V5.0（完整研究生命周期系统）⭐ | **生产版本**: V2.5（知识增强导师）
 
 > 📖 **版本选择指南**：参见 [ARCHITECTURE_UNIFIED.md](./ARCHITECTURE_UNIFIED.md) 了解完整版本演进
 > 🚀 **快速开始**：参见 [START_HERE.md](./🚀_START_HERE.md) 选择适合您的版本
@@ -10,21 +10,22 @@
 
 ## 🎯 系统概述
 
-ACS蜂巢是一个**学术研究全生命周期智能系统**，从V1.2的审稿专家演进到V4.0的多维度研究伙伴。
+ACS蜂巢是一个**学术研究全生命周期智能系统**，从V1.2的审稿专家演进到V5.0的完整研究生命周期伙伴。
 
 ### 版本演进概览
 
 ```
-V1.2 (2025-11-10)  →  V2.0-V2.5 (2025-11-13~16)  →  V3.0 (2025-11-17)  →  V4.0 (2025-11-17)
-单一审稿专家         导师模式+记忆+知识           多智能体架构          灵魂DNA系统
+V1.2 (2025-11-10)  →  V2.0-V2.5 (2025-11-13~16)  →  V3.0 (2025-11-17)  →  V4.0 (2025-11-17)  →  V5.0 (2025-11-18)
+单一审稿专家         导师模式+记忆+知识           多智能体架构          灵魂DNA系统           完整生命周期
 ```
 
-#### V4.0 灵魂DNA架构（当前最新）
-- ✅ **18灵魂架构**：L0-L3四层系统，每个灵魂具备独立认知DNA
-- ✅ **三级工具协议**：项目级 > 用户级 > 系统级动态工具聚合
-- ✅ **信息素自动化**：事件驱动的工作流引擎
-- ✅ **蜂后领衔**：ACS-Coordinator元认知控制器
-- 📄 详见：[SOUL_DNA_CONFIGURATION.md](./SOUL_DNA_CONFIGURATION.md)
+#### V5.0 完整研究生命周期系统（当前最新）⭐
+- ✅ **Phase 1核心增强**：Designer（研究设计）+ Reviewer（同行评审）+ Guardian（质量保证）
+- ✅ **Phase 2完整系统**：Librarian（RAG长期记忆 + 知识图谱）
+- ✅ **Phase 3领域扩展**：Ethicist（伦理）+ Bioinformatician（组学）+ Epidemiologist（流行病学）
+- ✅ **15核心灵魂**：精简而完整，每个灵魂不可替代
+- ✅ **完整生命周期**：问题提出→设计→文献→伦理→分析→撰写→质检→预审→教学→进化
+- 📄 详见：[ACS_V5_0_ARCHITECTURE.md](./ACS_V5_0_ARCHITECTURE.md)
 
 #### V2.5 知识增强导师（生产就绪）
 - ✅ **双模式运行**：批判审稿 + 苏格拉底教学
@@ -56,7 +57,18 @@ V1.2 (2025-11-10)  →  V2.0-V2.5 (2025-11-13~16)  →  V3.0 (2025-11-17)  →  
 
 ## 🏗️ 系统架构
 
-### V4.0 灵魂DNA架构（当前最新）
+### V5.0 完整研究生命周期系统（当前最新）
+
+#### 核心架构：15灵魂 + 完整生命周期覆盖
+
+**Phase 1-3新增灵魂**：
+- **[A-01] Designer** - 研究设计师（PICO/样本量/偏倚控制）
+- **[A-02] Reviewer** - 同行评审者（顶刊审稿标准/预审）
+- **[B-10] Guardian** - 质量守护者（CONSORT/STROBE内建质检）
+- **[B-11] Librarian** - 知识管理员（RAG长期记忆/引用网络）
+- **[A-07] Ethicist** - 伦理顾问（IRB/GDPR/知情同意）*可选*
+- **[A-08] Bioinformatician** - 生信专家（组学数据分析）*可选*
+- **[A-09] Epidemiologist** - 流行病学家（因果推断/DAG）*可选*
 
 #### 蜂后领衔的群智涌现架构
 
@@ -516,6 +528,7 @@ mindsymphony.config.yml   # 蜂巢总配置
 ## 📚 延伸阅读
 
 ### 核心文档
+- **[ACS_V5_0_ARCHITECTURE.md](./ACS_V5_0_ARCHITECTURE.md)** - ⭐ V5.0完整研究生命周期系统架构
 - **[ARCHITECTURE_UNIFIED.md](./ARCHITECTURE_UNIFIED.md)** - 完整版本演进和架构对比
 - **[SOUL_DNA_CONFIGURATION.md](./SOUL_DNA_CONFIGURATION.md)** - V4.0灵魂DNA配置详解
 - **[SYSTEM_EVOLUTION_MAP.md](./SYSTEM_EVOLUTION_MAP.md)** - 系统演进地图
@@ -523,15 +536,15 @@ mindsymphony.config.yml   # 蜂巢总配置
 - **[🚀_START_HERE.md](./🚀_START_HERE.md)** - 快速开始指南
 
 ### 配置文件
-- **[mindsymphony.config.yml](./mindsymphony.config.yml)** - V4.0蜂巢总配置
+- **[mindsymphony.config.yml](./mindsymphony.config.yml)** - V5.0蜂巢总配置
 - **[.acs_mentor/multi_agent_config.yaml](./.acs_mentor/multi_agent_config.yaml)** - V3.0多智能体配置
 - **[system_configs/](./system_configs/)** - V1.2决策系统配置
 
 ---
 
-**当前版本**: V4.0 (灵魂DNA架构)
+**当前版本**: V5.0 (完整研究生命周期系统)⭐
 **生产版本**: V2.5 (知识增强导师)
-**最后更新**: 2025-11-17
+**最后更新**: 2025-11-18
 **系统定位**: 学术研究全生命周期智能伙伴
 
-*"从单一审稿到全程伙伴，从被动工具到主动协作"*
+*"从问题提出到论文发表，从设计到审稿，15个灵魂陪伴完整科研旅程"*

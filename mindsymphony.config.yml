@@ -1,29 +1,35 @@
 # ============================================================================
-# MindSymphony Configuration - ACS V4.0 灵魂DNA架构
+# MindSymphony Configuration - ACS V5.0 完整研究生命周期系统
 # ============================================================================
 #
-# 架构总览:
-#   L0 (系统基石): 8个灵魂 - 能力、工具、质量保障
-#   L1 (状态决策): 3个灵魂 - 人格、主动性、适应
-#   L2 (功能单元): 4个单元 - 科研工作流专家
-#   L3 (元进化):   2个灵魂 - 学习与进化
-# 总计: 18个核心灵魂 (可选配置，当前5个核心组件已覆盖核心功能)
+# 架构总览（V5.0精简优化版）:
+#   L0 (系统基石): 5个灵魂 - [M-08/B-06/B-09/B-10/B-11] 能力、工具、质量、知识
+#   L1 (状态决策): 2个灵魂 - [M-03/ACS-Persona] 蜂后+人格核心
+#   L2 (功能专家): 6-9个灵魂 - 研究全周期专家团队
+#       核心6个: Designer, Explorer, Analyst, Writer, Reviewer, Mentor
+#       可选3个: Ethicist, Bioinformatician, Epidemiologist
+#   L3 (元进化):   2个灵魂 - [M-04/M-01] 记录与进化
+# 总计: 15个核心灵魂（可扩展至18个）
 #
-# 核心设计理念:
-#   - 18个灵魂不是"必须"而是"可选"
-#   - 当前4个Specialist + 1个Coordinator已覆盖核心功能
-#   - 灵魂DNA提供"可扩展能力"而非"必需依赖"
+# V5.0核心升级:
+#   ✨ 新增Designer（研究设计师） - 填补研究起点缺口
+#   ✨ 新增Reviewer（同行评审者） - 投稿前质量把关
+#   ✨ 新增Guardian（质量守护者） - 内建质量保证
+#   ✨ 新增Librarian（知识管理员） - RAG长期记忆
+#   ✨ 可选领域专家：Ethicist/Bioinformatician/Epidemiologist
 #
 # 版本演进:
 #   V1.2-V2.5: 功能堆叠期
 #   V3.0: 多智能体架构
-#   V4.0: 灵魂DNA系统（当前版本）
+#   V4.0: 灵魂DNA系统
+#   V5.0: 完整研究生命周期系统（当前版本）⭐
 # ============================================================================
 
-version: "4.0.0"
-created: "2025-11-17"
-architecture: "queen_led_swarm_with_soul_dna"
-evolution: "V3.0 (Multi-Agent) → V4.0 (Soul DNA Architecture)"
+version: "5.0.0"
+created: "2025-11-18"
+updated: "2025-11-18"
+architecture: "complete_research_lifecycle_system"
+evolution: "V4.0 (Soul DNA) → V5.0 (Complete Lifecycle System)"
 
 # ============================================================================
 # 1. 蜂后配置区 - Queen Configuration (M-03)
@@ -165,6 +171,68 @@ system_souls:
         - "交付给核心引擎"
 
     status: "core"
+
+  # --- V5.0 新增：质量与知识管理 ---
+
+  - id: B-10
+    name: "[B-10] 质量守护者 | Quality Guardian"
+    layer: L0
+    role: "内建质量保证系统"
+    description: |
+      系统的"质量防线"，在每个输出环节进行自动检查。
+      不同于事后审查，Guardian嵌入到工作流中，确保质量内建。
+
+    soul_dna_config: ".acs_mentor/souls/guardian_dna.yaml"
+
+    capabilities:
+      - "CONSORT/STROBE自动合规检查"
+      - "统计报告完整性验证（效应量+CI+p值）"
+      - "数据完整性审计"
+      - "可重复性检查"
+      - "科学诚信监控（p-hacking检测）"
+
+    quality_gates:
+      after_designer: "检查设计缺陷（无对照/样本量不足）"
+      after_analyst: "检查统计报告三要素"
+      after_writer: "检查CONSORT/STROBE合规"
+
+    quality_scorecard:
+      - "设计严谨性: 0-100"
+      - "统计规范性: 0-100"
+      - "报告完整性: 0-100"
+      - "诚信指标: Pass/Warning/Fail"
+      threshold: "总分≥240/300 + 诚信Pass → 放行"
+
+    status: "core"  # V5.0核心升级
+
+  - id: B-11
+    name: "[B-11] 知识图书馆员 | Knowledge Librarian"
+    layer: L0
+    role: "系统级知识管理与长期记忆"
+    description: |
+      系统的"长期记忆"，通过RAG实现跨会话知识持久化。
+      让AI不再"失忆"，每次对话都能调用历史知识。
+
+    soul_dna_config: ".acs_mentor/souls/librarian_dna.yaml"
+
+    capabilities:
+      - "RAG知识管理（Vector DB）"
+      - "文献网络图谱构建"
+      - "智能引用管理（Zotero集成）"
+      - "个人知识库维护"
+      - "跨项目知识复用"
+
+    technical_stack:
+      vector_db: "Chroma/Pinecone"
+      embedding: "OpenAI text-embedding-3-large"
+      retrieval: "Semantic search + Re-ranking"
+
+    workflow:
+      - "Explorer检索文献 → Librarian自动索引"
+      - "Analyst分析数据 → Librarian记录方法"
+      - "用户提问 → Librarian检索相关历史知识"
+
+    status: "core"  # V5.0核心升级
 
   - id: M-06
     name: "[M-06] 手稿校对官 | Manuscript QA Officer"
@@ -353,12 +421,84 @@ system_souls:
 # ============================================================================
 # 3. 工蜂单元注册区 - Worker Units Registration
 # ============================================================================
-# 注册 L2 的 4 个功能单元（继承自 multi_agent_config.yaml）
-# 这些是蜂后可以分派具体科研任务的"专业团队"
+# V5.0: 注册 L2 的 6-9 个功能单元
+# 核心6个：Designer, Explorer, Analyst, Writer, Reviewer, Mentor
+# 可选3个：Ethicist, Bioinformatician, Epidemiologist
 
 worker_units:
 
-  # --- Unit 1: ACS-Explorer ---
+  # ========== V5.0 新增核心单元 ==========
+
+  # --- Unit 1: ACS-Designer (V5.0核心新增) ---
+  - name: "ACS-Designer"
+    version: "1.0"
+    description: "研究设计师 - 研究全生命周期的起点，负责从PICO问题到完整设计方案"
+
+    role: "实验设计与方法论架构"
+    layer: L2
+
+    soul_dna_config: ".acs_mentor/souls/designer_dna.yaml"
+
+    core_capabilities:
+      - "PICO/FINER框架问题精炼"
+      - "研究设计类型选择（RCT/队列/病例对照等）"
+      - "样本量计算"
+      - "随机化与盲法设计"
+      - "偏倚控制策略"
+      - "统计分析计划（SAP）草拟"
+
+    typical_tasks:
+      - "设计RCT研究方案"
+      - "计算所需样本量"
+      - "选择合适的研究设计类型"
+      - "控制混杂因素（DAG图）"
+
+    collaboration:
+      upstream: "Explorer提供文献支持"
+      downstream: "Analyst执行分析计划"
+      quality_check: "Guardian审查设计缺陷"
+
+    status: "core"  # V5.0必备
+
+  # --- Unit 2: ACS-Reviewer (V5.0核心新增) ---
+  - name: "ACS-Reviewer"
+    version: "1.0"
+    description: "同行评审者 - 投稿前预审专家，模拟顶刊审稿人视角"
+
+    role: "预评审与弱点识别"
+    layer: L2
+
+    soul_dna_config: ".acs_mentor/souls/reviewer_dna.yaml"
+
+    core_capabilities:
+      - "顶刊审稿人视角模拟（NEJM/Lancet/JAMA）"
+      - "常见拒稿原因检测"
+      - "CONSORT/STROBE合规检查"
+      - "预期审稿意见生成"
+      - "Rebuttal letter指导"
+
+    review_dimensions:
+      - "科学创新性（Novelty）"
+      - "方法严谨性（Rigor）"
+      - "写作清晰性（Clarity）"
+      - "临床影响力（Impact）"
+
+    typical_tasks:
+      - "论文投稿前压力测试"
+      - "识别致命弱点（Desk Reject风险）"
+      - "生成预期审稿意见清单"
+      - "指导Rebuttal回复策略"
+
+    collaboration:
+      upstream: "Writer完成初稿"
+      downstream: "Writer根据建议修订"
+      iteration: "多轮审查直到达标"
+
+    status: "core"  # V5.0必备
+
+  # ========== 原有核心单元 ==========
+
+  # --- Unit 3: ACS-Explorer ---
   - name: "ACS-Explorer"
     version: "2.0"
     description: "文献挖掘的继承者。负责前沿扫描、文献检索与融合。"
@@ -512,6 +652,40 @@ worker_units:
       - "方法论指导"
       - "研究设计咨询"
       - "批判性审阅"
+
+  # ========== V5.0 可选领域专家 (Phase 3) ==========
+
+  # --- Optional Unit: ACS-Ethicist ---
+  - name: "ACS-Ethicist"
+    version: "1.0"
+    description: "伦理顾问 - 研究伦理与合规专家"
+    role: "研究伦理与法规合规"
+    layer: L2
+    activation: "当研究涉及人体试验/敏感数据时"
+    soul_dna_config: ".acs_mentor/souls/ethicist_dna.yaml"
+    status: "optional"
+
+  # --- Optional Unit: ACS-Bioinformatician ---
+  - name: "ACS-Bioinformatician"
+    version: "1.0"
+    description: "生物信息学专家 - 组学数据分析"
+    role: "组学数据分析"
+    layer: L2
+    parent: "ACS-Analyst"
+    activation: "当研究涉及组学数据时"
+    soul_dna_config: ".acs_mentor/souls/bioinformatician_dna.yaml"
+    status: "optional"
+
+  # --- Optional Unit: ACS-Epidemiologist ---
+  - name: "ACS-Epidemiologist"
+    version: "1.0"
+    description: "流行病学家 - 人群研究与因果推断"
+    role: "人群研究与因果推断"
+    layer: L2
+    parent: "ACS-Designer + ACS-Analyst"
+    activation: "当研究涉及人群健康/因果推断时"
+    soul_dna_config: ".acs_mentor/souls/epidemiologist_dna.yaml"
+    status: "optional"
 
 # ============================================================================
 # 4. 信息素订阅区 - Pheromones (Automated Workflows)
@@ -746,7 +920,18 @@ metadata:
     - "可重复性是基本要求"
 
   changelog:
-    - version: "1.2.0"
+    - version: "5.0.0"
+      date: "2025-11-18"
+      changes:
+        - "🎯 Phase 1: 新增Designer（研究设计师）- 填补研究起点缺口"
+        - "🎯 Phase 1: 新增Reviewer（同行评审者）- 投稿前质量把关"
+        - "🎯 Phase 1: 新增Guardian（质量守护者）- 内建质量保证"
+        - "📚 Phase 2: 新增Librarian（知识管理员）- RAG长期记忆"
+        - "🔬 Phase 3: 新增3个可选领域专家（Ethicist/Bioinformatician/Epidemiologist）"
+        - "🏗️ 架构精简：从18灵魂优化到15核心灵魂（可扩展至18）"
+        - "✨ 完整研究生命周期覆盖：设计→文献→分析→写作→预审→教学"
+
+    - version: "4.0.0"
       date: "2025-11-17"
       changes:
         - "整合18灵魂架构"
