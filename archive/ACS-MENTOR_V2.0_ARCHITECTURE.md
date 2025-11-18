@@ -1,3 +1,14 @@
+# ⚠️ ARCHIVED - ACS-Mentor V2.0 架构设计文档
+
+> **归档警告**：本文档已归档，仅供历史参考。当前系统已演进到V4.0。
+>
+> - **归档日期**：2025-11-17
+> - **归档原因**：系统已演进到V3.0多智能体架构和V4.0灵魂DNA架构
+> - **当前文档**：参见 [ARCHITECTURE_UNIFIED.md](../ARCHITECTURE_UNIFIED.md) 了解完整演进
+> - **生产版本**：V2.5（知识增强导师）详见 [ACS_MENTOR_V2_5_ARCHITECTURE.md](./ACS_MENTOR_V2_5_ARCHITECTURE.md)
+
+---
+
 # ACS-Mentor V2.0 架构设计文档
 
 **设计日期**: 2025-11-13

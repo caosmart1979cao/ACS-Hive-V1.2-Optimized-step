@@ -1,3 +1,14 @@
+# ⚠️ ARCHIVED - FILE MANIFEST - ACS蜂巢V1.2优化版
+
+> **归档警告**：本文档已归档，仅供历史参考。
+>
+> - **归档日期**：2025-11-17
+> - **归档原因**：文件结构已随系统演进发生重大变化，本清单仅反映V1.2时期状态
+> - **当前结构**：参见 [ARCHITECTURE_UNIFIED.md](../ARCHITECTURE_UNIFIED.md) 了解当前文件组织
+> - **系统演进**：参见 [SYSTEM_EVOLUTION_MAP.md](../SYSTEM_EVOLUTION_MAP.md) 了解完整演进
+
+---
+
 # FILE MANIFEST - ACS蜂巢V1.2优化版
 
 ## 📦 完整文件清单

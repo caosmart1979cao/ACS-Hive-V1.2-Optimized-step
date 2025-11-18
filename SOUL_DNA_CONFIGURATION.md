@@ -499,7 +499,15 @@ grep -A 30 "workflow:" .acs_mentor/souls/writer_dna.yaml
 **构建者：** ACS-Hive Development Team
 **许可证：** MIT
 **创建日期：** 2025-11-17
-**配置版本：** v1.2.0
+**配置版本：** V4.0.0
+
+**版本说明：**
+- V1.2-V2.5: 功能堆叠期
+- V3.0: 多智能体架构（4个Specialist + Coordinator）
+- **V4.0: 灵魂DNA系统（当前版本）** ⭐
+  - 18灵魂架构
+  - 三级工具协议
+  - 信息素自动化
 
 ---
 
